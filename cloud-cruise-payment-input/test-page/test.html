@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Component Example</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="./static/css/main.f79dc61a.css"
+    />
+  </head>
+  <body>
+    <script src="./static/js/main.b0a45384.js"></script>
+    <header
+      style="
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        height: 70px;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 100px;
+        align-items: center;
+      "
+    >
+      <h1 style="font-weight: bold; font-size: large; color: rgb(255, 19, 36)">
+        [Logo]
+      </h1>
+      <div>
+        <input
+          type="text"
+          placeholder="Type category"
+          style="
+            height: 30px;
+            width: 900px;
+            border-radius: 20px;
+            background-color: rgb(248, 248, 248);
+            padding-left: 20px;
+            padding-top: 20px;
+            padding-bottom: 20px;
+          "
+        />
+        <button
+          style="
+            height: 40px;
+            width: 100px;
+            border-radius: 20px;
+            background-color: rgb(255, 19, 36);
+            color: white;
+            margin-left: 10px;
+          "
+        >
+          Search
+        </button>
+      </div>
+    </header>
+    <div
+      style="
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        margin-left: 50px;
+        margin-right: 50px;
+        gap: 10px;
+      "
+    >
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 40px;
+        "
+      >
+        <div
+          style="
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            border-radius: 5px;
+            gap: 20px;
+          "
+        >
+          <div
+            style="
+              width: 100%;
+              height: 350px;
+              background-color: rgb(208, 208, 208);
+              border-radius: 5px;
+            "
+          ></div>
+          <div style="display: flex; gap: 10px">
+            <div
+              style="
+                width: 70px;
+                height: 70px;
+                background-color: rgb(208, 208, 208);
+                border-radius: 5px;
+              "
+            ></div>
+            <div
+              style="
+                width: 70px;
+                height: 70px;
+                background-color: rgb(208, 208, 208);
+                border-radius: 5px;
+              "
+            ></div>
+            <div
+              style="
+                width: 70px;
+                height: 70px;
+                background-color: rgb(208, 208, 208);
+                border-radius: 5px;
+              "
+            ></div>
+            <div
+              style="
+                width: 70px;
+                height: 70px;
+                background-color: rgb(208, 208, 208);
+                border-radius: 5px;
+              "
+            ></div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <div style="font-size: x-large">Product Name</div>
+          <div>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum
+            vestibulum in lectus non fringilla. Aenean feugiat, enim non cursus
+            commodo, est nulla laoreet velit, nec tincidunt tortor nunc in urna.
+            Etiam tincidunt nulla sed sagittis maximus. Morbi facilisis congue
+            purus, eu lobortis elit semper in.
+          </div>
+          <div
+            style="
+              width: 100%;
+              border-bottom: 1px solid rgb(215, 215, 215);
+              margin-top: 20px;
+              margin-bottom: 20px;
+            "
+          ></div>
+          <div>
+            <span style="color: rgb(121, 121, 121)">Price now: </span>
+            from
+            <span style="font-size: large">9.99£</span>
+            to
+            <span style="font-size: large">19.99£</span>
+          </div>
+          <button
+            style="
+              border-radius: 100px;
+              padding: 12px;
+              background-color: rgb(255, 19, 36);
+              color: white;
+              font-weight: bold;
+              margin-top: 20px;
+            "
+          >
+            View Cheapest Offer
+          </button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <h2 style="font-size: x-large">Top picks</h2>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+              gap: 10px;
+              align-items: center;
+            "
+          >
+            <div style="color: rgb(121, 121, 121)">boots.com</div>
+            <div style="font-size: large">9.99£</div>
+            <div style="color: rgb(121, 121, 121)">3.00£ delivery</div>
+            <div style="display: flex; justify-content: flex-end">
+              <button
+                style="
+                  background-color: black;
+                  color: white;
+                  width: 40px;
+                  height: 40px;
+                  border-radius: 100%;
+                "
+              >
+                →
+              </button>
+            </div>
+            <div style="grid-column: span 4 / span 4">
+              <cloud-cruise-payment
+                estimatedShippingBusinessDays="3"
+                estimatedShippingCost="3.50"
+                price="95"
+                productDescription="Oral-B iO4 Electric Toothbrush - Lavender - (+Travel case)"
+                productLink="https://www.boots.com/oral-b-io-4-lavender-electric-toothbrush-designed-by-braun-10316062"
+                productImage="https://boots.scene7.com/is/image/Boots/10316062?op_sharpen=1"
+              ></cloud-cruise-payment>
+            </div>
+          </div>
+          <div
+            style="
+              width: 100%;
+              border-bottom: 1px solid rgb(215, 215, 215);
+              margin-bottom: 10px;
+              margin-top: 10px;
+            "
+          ></div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+              gap: 10px;
+              align-items: center;
+            "
+          >
+            <div style="color: rgb(121, 121, 121)">Express</div>
+            <div style="font-size: large">19.99£</div>
+            <div style="color: rgb(121, 121, 121)">3.00£ delivery</div>
+            <div style="display: flex; justify-content: flex-end">
+              <button
+                style="
+                  background-color: black;
+                  color: white;
+                  width: 40px;
+                  height: 40px;
+                  border-radius: 100%;
+                "
+              >
+                →
+              </button>
+            </div>
+          </div>
+          <div
+            style="
+              width: 100%;
+              border-bottom: 1px solid rgb(215, 215, 215);
+              margin-bottom: 10px;
+              margin-top: 10px;
+            "
+          ></div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+              gap: 10px;
+              align-items: center;
+            "
+          >
+            <div style="color: rgb(121, 121, 121)">Superdrug</div>
+            <div style="font-size: large">15.99£</div>
+            <div style="color: rgb(121, 121, 121)">3.00£ delivery</div>
+            <div style="display: flex; justify-content: flex-end">
+              <button
+                style="
+                  background-color: black;
+                  color: white;
+                  width: 40px;
+                  height: 40px;
+                  border-radius: 100%;
+                "
+              >
+                →
+              </button>
+            </div>
+          </div>
+          <div
+            style="
+              width: 100%;
+              border-bottom: 1px solid rgb(215, 215, 215);
+              margin-top: 5px;
+              margin-bottom: 20px;
+            "
+          ></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
