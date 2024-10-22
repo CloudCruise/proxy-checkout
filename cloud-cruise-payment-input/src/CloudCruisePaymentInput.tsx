@@ -16,52 +16,7 @@ import images, { CardImages } from "react-payment-inputs/images";
 import { cn } from "./lib/utils";
 import { Card, EvervaultProvider, themes } from "@evervault/react";
 import { AddressFinder } from "@ideal-postcodes/address-finder";
-
-const StatusUpdatePopover: React.FC<{
-  currentIndex: number;
-  statusUpdates: string[];
-}> = ({ currentIndex, statusUpdates }) => (
-  <div
-    className="fixed inset-0 flex items-center justify-center z-50 "
-    style={{ zIndex: 9999 }}
-  >
-    <div className="absolute inset-0 bg-white" />
-    <div className="z-10">
-      <div className="flex flex-col gap-16 p-5">
-        <div className="text-2xl">
-          The Checkout Concierge is placing your order
-        </div>
-        <div className="max-h-[130px] h-[130px] overflow-hidden flex flex-col gap-5 gradient-text text-lg transition-all">
-          <div
-            className="flex flex-col gap-5 w-full transition-all"
-            style={{ marginTop: `${-(currentIndex * 43 - 43)}px` }}
-          >
-            {statusUpdates.map((status, index) => (
-              <div
-                key={index}
-                className={cn("flex gap-5 items-center justify-start", {})}
-              >
-                <CheckCircleIcon
-                  className={cn(
-                    "w-5 h-5",
-                    index <= currentIndex ? "text-green-500" : "text-gray-300"
-                  )}
-                />
-                <div>{status}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <div className="flex items-center justify-center">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            <div className="text-gray-700">Checkout in progress</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+import { StatusUpdatePopover } from "./components/updateLoader";
 
 interface CloudCruisePaymentInputProps {
   container?: {
@@ -759,8 +714,32 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                       </div>
                     </div>
                     {executionError && (
-                      <div className="text-red-500 text-center text-lg">
-                        {executionError}
+                      <div className="p-4 mt-4 mb-4 rounded-lg bg-red-50 border border-red-200">
+                        <div className="flex items-center justify-center space-x-2">
+                          <svg
+                            className="w-5 h-5 text-red-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <p className="text-red-700 font-medium">
+                            Oops! There was an error checking out. Please{" "}
+                            <a
+                              href={productLink}
+                              className="text-red-700 underline hover:text-red-800 font-semibold"
+                            >
+                              click here
+                            </a>{" "}
+                            to checkout manually.
+                          </p>
+                        </div>
                       </div>
                     )}
                     <div className="flex justify-end">
