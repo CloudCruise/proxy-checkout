@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv("./.env.development")
 import time
 import os
 import hashlib
@@ -110,7 +110,7 @@ def verify_message(received_data, received_signature, secret_key):
         data_json = json.loads(received_data.decode('utf-8'))
     except json.JSONDecodeError as e:
         raise VerificationError("Failed to decode json: " + str(e), 400)
-    
+
     # Check if the expiration is sent
     expires_at = data_json.get("expires_at")
     if not expires_at:
@@ -123,7 +123,7 @@ def verify_message(received_data, received_signature, secret_key):
     # Check if the message is not expired
     if time.time() > expires_at:
         raise VerificationError("Webhook message expired.", 400)
-    
+
     return data_json
 
 async def process_cc_data(data, session_id):
