@@ -208,6 +208,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const [givenPrice, setGivenPrice] = useState(price);
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<string[]>([]);
+  const statusRef = useRef(status);
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -268,6 +269,10 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   }, []);
 
   useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
+  useEffect(() => {
     if (step === 1 && isOpen === true) {
       // Wait for the DOM to update before initializing AddressFinder
       setTimeout(initAddressFinder, 0);
@@ -310,7 +315,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         }
       }
       if (data?.data?.current_step) {
-        if (status.length === 0) {
+        if (statusRef.current.length === 0) {
           setStatus((prevStatus) => [...prevStatus, data?.data?.current_step]);
         }
         if (data?.data?.next_step) {
@@ -347,7 +352,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     return () => {
       eventSource.close();
     };
-  }, [sessionId, setStep, setIsOpen, status]);
+  }, [sessionId, setStep, setIsOpen]);
 
   const [evervaultCardDetails, setEvervaultCardDetails] = useState<{
     card: {
