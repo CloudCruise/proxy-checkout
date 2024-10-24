@@ -586,8 +586,8 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
               Buy Now
           </button>
         </DialogTrigger>
-        <DialogContent className="w-[100vw] h-[100vh] flex justify-center">
-          <div className="flex flex-col gap-8 max-w-[1000px] w-full h-full py-10 ">
+        <DialogContent className="w-full h-full md:w-[100vw] md:h-[100vh] flex justify-center overflow-y-auto">
+          <div className="flex flex-col gap-8 max-w-[1000px] w-full h-full py-10 px-4 md:px-0">
             {step < 3 && (
               <div className="flex md:flex-row flex-col gap-5 h-full">
                 {step === 1 && (
