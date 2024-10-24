@@ -2,12 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./index.scss";
 import { Input } from "./components/ui/input";
-import {
-  ShoppingCart,
-  ShieldCheckIcon,
-  Loader2,
-  CheckCircleIcon,
-} from "lucide-react";
+import { ShoppingCart, ShieldCheckIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "./components/ui/dialog";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
@@ -17,6 +12,7 @@ import { cn } from "./lib/utils";
 import { Card, EvervaultProvider, themes } from "@evervault/react";
 import { AddressFinder } from "@ideal-postcodes/address-finder";
 import { StatusUpdatePopover } from "./components/updateLoader";
+import { PriceChangeDialog } from "./components/priceChangeUserInput";
 
 interface CloudCruisePaymentInputProps {
   container?: {
@@ -124,6 +120,35 @@ export async function triggerCheckout(
   }
 }
 
+export async function submitUserInput(
+  userInput: Record<string, any>,
+  sessionId: string
+): Promise<RunResponse | ErrorResponse> {
+  await new Promise((resolve) => setTimeout(resolve, 2000)) // wait for 2 seconds
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/run/${sessionId}/user_interaction`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userInput,
+        }),
+      }
+    );
+    const data: RunResponse = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error("Failed to fetch worker console data:", error);
+    const errorResponse: ErrorResponse = {
+      error: error.message || "Unknown error",
+    };
+    return errorResponse;
+  }
+}
+
 function useExecutingShoppingWarning(isExecutingShopping: boolean) {
   const [showWarning, setShowWarning] = useState(false);
   const [isUnloading, setIsUnloading] = useState(false);
@@ -180,11 +205,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     estimatedshippingbusinessdays: estimatedShipping,
     estimatedshippingcost: estimatedShippingCost,
   } = props.container ?? {};
-  useEffect(() => {
-    console.log("Props received:", props);
-    // @ts-ignore
-    console.log("price", props?.container?.price);
-  }, [props]);
+  const [givenPrice, setGivenPrice] = useState(price);
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -203,6 +224,8 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const [executionError, setExecutionError] = useState("");
   const [orderNumber, setOrderNumber] = useState("");
   const [deliverBy, setDeliverBy] = useState("");
+  const [orderTotal, setOrderTotal] = useState("");
+  const [openUserInputDialog, setOpenUserInputDialog] = useState(false);
   const addressFinderInitialized = useRef(false);
 
   useExecutingShoppingWarning(step === 4);
@@ -258,13 +281,34 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     }
 
     const eventSource = new EventSource(
-      `http://localhost:8001/status/${sessionId}`
+      `${process.env.REACT_APP_BACKEND_URL}/status/${sessionId}`
     );
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log(data);
       console.log("Received status:", data?.data?.current_step);
+      if (data.event === "interaction.waiting") {
+        const msg: string = data.data?.message;
+        if (msg.startsWith("New price:")) {
+          const newPrice = msg.split(":")[1].trim().slice(1);
+          console.log("New price:", newPrice);
+          if (Number(newPrice) < Number(givenPrice)) {
+            // If price has decreased just continue and show user that we found a better price
+            console.log("Price has decreased, continuing with purchase");
+            setStatus((prevStatus) => [
+              ...prevStatus,
+              "Found a lower price! New price is £" + newPrice,
+            ]);
+            submitUserInput({ accept: true }, sessionId)
+            setGivenPrice(newPrice);
+          } else {
+            // Let user confirm that they are okay with the new price
+            setOpenUserInputDialog(true);
+            setGivenPrice(newPrice);
+          }
+        }
+      }
       if (data?.data?.current_step) {
         if (status.length === 0) {
           setStatus((prevStatus) => [...prevStatus, data?.data?.current_step]);
@@ -277,6 +321,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       if (data.event === "execution.success") {
         setDeliverBy(data.data?.results?.[0]?.deliver_by ?? "");
         setOrderNumber(data.data?.results?.[0]?.order_number?.toString() ?? "");
+        setOrderTotal(data.data?.results?.[0]?.order_total?.toString() ?? "");
         setIsLoading(false);
         setStep(5);
         setIsOpen(true);
@@ -289,9 +334,6 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         setIsLoading(false);
         setStep(2);
         setIsOpen(true);
-        toast.error("Order failed to make", {
-          description: data?.data?.errors[0]?.message,
-        });
         setExecutionError(data?.data?.errors[0]?.message);
         setStatus([]);
       }
@@ -425,11 +467,11 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validatePaymentForm()) {
-      // Send request to backend at localhost:8000
+      // Send request to backend
       console.log("Sending request to backend...");
       triggerCheckout(
         productLink ?? "",
-        "£" + price,
+        "£" + givenPrice,
         firstName,
         lastName,
         email,
@@ -494,6 +536,33 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       )}
     </div>
   );
+
+  const handleAcceptPrice = () => {
+    setOpenUserInputDialog(false);
+    submitUserInput({ accept: true }, sessionId)
+      .then((response) => {
+        if ("error" in response) {
+          toast.error("Failed to update workflow", {
+            description: response.error,
+          });
+        }
+      })
+      .catch((error) => {
+        toast.error("Failed to place order", {
+          description: error.message,
+        });
+      });
+  };
+
+  const handleDeclinePrice = () => {
+    setOpenUserInputDialog(false);
+    setExecutionError("Purchase cancelled due to price change");
+    setIsLoading(false);
+    setIsOpen(false);
+    submitUserInput({ accept: false }, sessionId)
+    setStatus([]);
+    setExecutionError("");
+  };
 
   return (
     <EvervaultProvider
@@ -729,11 +798,11 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                             />
                           </svg>
-                          <p className="text-red-700 font-medium">
+                          <p className="text-red-700">
                             Oops! There was an error checking out. Please{" "}
                             <a
                               href={productLink}
-                              className="text-red-700 underline hover:text-red-800 font-semibold"
+                              className="text-red-700 underline hover:text-red-800"
                             >
                               click here
                             </a>{" "}
@@ -771,13 +840,15 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                           {productDescription}
                         </div>
                       </div>
-                      <div className="font-semibold text-sm">£{price}</div>
+                      <div className="font-semibold text-sm">£{givenPrice}</div>
                     </div>
                     <div className="border-b border-gray-200" />
                     <div className="flex flex-col gap-1">
                       <div className="flex justify-between items-center">
                         <div className="text-sm text-gray-800">Subtotal</div>
-                        <div className="text-sm text-gray-800">£{price}</div>
+                        <div className="text-sm text-gray-800">
+                          £{givenPrice}
+                        </div>
                       </div>
                       <div className="flex justify-between items-center">
                         <div className="flex flex-col">
@@ -801,7 +872,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                       <div className="text-2xl font-semibold">
                         £
                         {(
-                          Number(price) + Number(estimatedShippingCost)
+                          Number(givenPrice) + Number(estimatedShippingCost)
                         ).toFixed(2)}
                       </div>
                     </div>
@@ -834,7 +905,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="text-sm text-gray-800">Order Total</div>
-                      <div className="text-sm text-gray-800">£8.50</div>
+                      <div className="text-sm text-gray-800">{orderTotal}</div>
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="text-sm text-gray-800">
@@ -903,6 +974,14 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
           statusUpdates={status}
         />
       )}
+      <PriceChangeDialog
+        open={openUserInputDialog}
+        onOpenChange={setOpenUserInputDialog}
+        oldPrice={price}
+        newPrice={givenPrice}
+        onAccept={handleAcceptPrice}
+        onDecline={handleDeclinePrice}
+      />
       <Toaster />
     </EvervaultProvider>
   );

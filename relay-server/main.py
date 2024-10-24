@@ -52,11 +52,23 @@ class CheckoutData(BaseModel):
 class ResponseSession(BaseModel):
     session_id: str
 
+@app.post("/run/{session_id}/user_interaction")
+def user_interaction(session_id: str, payload: dict):
+    cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT") + f"/run/{session_id}/user_interaction"
+    if cloudcruise_endpoint is None:
+        cloudcruise_endpoint = f"http://localhost:8000/run/{session_id}/user_interaction"
+    response = requests.post(
+        cloudcruise_endpoint,
+        headers={"cc-key": os.environ["REDBRAIN_CC_API_KEY"]},
+        json=payload['userInput']
+    )
+    return response.json()
+
 @app.post("/checkout")
 def trigger_checkout(payload: CheckoutData) -> ResponseSession:
     if not payload.cardHolder or payload.cardBin == 0:
         raise HTTPException(status_code=400, detail="Card holder and bin are required")
-    cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT")
+    cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT") + "/run"
     if cloudcruise_endpoint is None:
         cloudcruise_endpoint = "http://localhost:8000/run"
     response = requests.post(
