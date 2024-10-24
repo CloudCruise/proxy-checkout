@@ -583,7 +583,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         <DialogTrigger asChild>
           <button className="bg-black rounded-lg w-full text-white py-1.5 flex justify-center gap-2">
             <ShoppingCart className="w-4" />
-            Checkout Concierge
+              Buy Now
           </button>
         </DialogTrigger>
         <DialogContent className="w-[100vw] h-[100vh] flex justify-center">
