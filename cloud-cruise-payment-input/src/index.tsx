@@ -11,6 +11,7 @@ interface Product {
   price: string;
   estimatedshippingbusinessdays: string;
   estimatedshippingcost: string;
+  scenario?: string;
 }
 
 const ProductListing: React.FC = () => {
@@ -23,6 +24,7 @@ const ProductListing: React.FC = () => {
       price: "3.15",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
+      scenario: "The OG"
     },
     // 50 pounds
     {
@@ -31,7 +33,8 @@ const ProductListing: React.FC = () => {
       productdescription: "LEGO Classic Creative Houses Building Toys",
       price: "49.99",
       estimatedshippingbusinessdays: "3",
-      estimatedshippingcost: "3.95"
+      estimatedshippingcost: "3.95",
+      scenario: "50 pounds"
     },
     // 100 pounds
     {
@@ -40,7 +43,8 @@ const ProductListing: React.FC = () => {
       productdescription: "Gucci Guilty Elixir de Parfum for Her 60ml",
       price: "100.80",
       estimatedshippingbusinessdays: "3",
-      estimatedshippingcost: "3.95"
+      estimatedshippingcost: "3.95",
+      scenario: "100 pounds"
     },
     // Price lower
     {
@@ -49,7 +53,8 @@ const ProductListing: React.FC = () => {
       productdescription: "IT Cosmetics Your Skin But Better CC+ Nude Glow Tan Tan",
       price: "30.00",
       estimatedshippingbusinessdays: "3",
-      estimatedshippingcost: "3.95"
+      estimatedshippingcost: "3.95",
+      scenario: "Price lower"
     },
     // Price higher
     {
@@ -58,7 +63,8 @@ const ProductListing: React.FC = () => {
       productdescription: "BaBylissMEN Precision Cut Hair Clipper",
       price: "26.50",
       estimatedshippingbusinessdays: "3",
-      estimatedshippingcost: "3.95"
+      estimatedshippingcost: "3.95",
+      scenario: "Price higher"
     }
   ];
 
@@ -105,6 +111,11 @@ const ProductListing: React.FC = () => {
                 
                 <div className="pt-4">
                   <CloudCruisePaymentInput container={product} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">
+                    Scenario: {product.scenario}
+                  </p> 
                 </div>
               </div>
             </div>
