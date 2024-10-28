@@ -227,7 +227,8 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const [deliverBy, setDeliverBy] = useState("");
   const [orderTotal, setOrderTotal] = useState("");
   const [openUserInputDialog, setOpenUserInputDialog] = useState(false);
-  const addressFinderInitialized = useRef(false);
+  const addressFinderInitialized = useRef(false);  
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   useExecutingShoppingWarning(step === 4);
 
@@ -285,11 +286,11 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       return;
     }
 
-    const eventSource = new EventSource(
+    eventSourceRef.current = new EventSource(
       `${process.env.REACT_APP_BACKEND_URL}/status/${sessionId}`
     );
 
-    eventSource.onmessage = (event) => {
+    eventSourceRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log(data);
       console.log("Received status:", data?.data?.current_step);
@@ -333,24 +334,37 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         toast.success("Order made successfully!", {
           description: "Your order has been placed and is being processed.",
         });
-        eventSource.close();
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
         setStatus([]);
       } else if (data.event === "execution.failed") {
         setIsLoading(false);
         setStep(2);
         setIsOpen(true);
         setExecutionError(data?.data?.errors[0]?.message);
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
         setStatus([]);
       }
     };
 
-    eventSource.onerror = (error) => {
+    eventSourceRef.current.onerror = (error) => {
       console.error("EventSource failed:", error);
-      eventSource.close();
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
     };
 
     return () => {
-      eventSource.close();
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
     };
   }, [sessionId, setStep, setIsOpen]);
 
@@ -566,6 +580,10 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     setIsOpen(false);
     submitUserInput({ accept: false }, sessionId)
     setStatus([]);
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
     setExecutionError("");
   };
 
