@@ -26,7 +26,7 @@ const ProductListing: React.FC = () => {
       estimatedshippingcost: "3.95",
       scenario: "The OG"
     },
-    // 50 pounds
+    // Out of stock
     {
       productlink: "https://www.awin1.com/pclick.php?p=36893232470&a=176013&m=2041",
       productimage: "https://boots.scene7.com/is/image/Boots/10340364?op_sharpen=1",
@@ -34,7 +34,7 @@ const ProductListing: React.FC = () => {
       price: "49.99",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
-      scenario: "50 pounds"
+      scenario: "Out of stock"
     },
     // 100 pounds
     {

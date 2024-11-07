@@ -124,7 +124,7 @@ export async function submitUserInput(
   userInput: Record<string, any>,
   sessionId: string
 ): Promise<RunResponse | ErrorResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 2000)) // wait for 2 seconds
+  await new Promise((resolve) => setTimeout(resolve, 2000)); // wait for 2 seconds
   try {
     const response = await fetch(
       `${process.env.REACT_APP_BACKEND_URL}/run/${sessionId}/user_interaction`,
@@ -223,11 +223,12 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [sessionId, setSessionId] = useState("");
   const [executionError, setExecutionError] = useState("");
+  const [errorCode, setErrorCode] = useState("");
   const [orderNumber, setOrderNumber] = useState("");
   const [deliverBy, setDeliverBy] = useState("");
   const [orderTotal, setOrderTotal] = useState("");
   const [openUserInputDialog, setOpenUserInputDialog] = useState(false);
-  const addressFinderInitialized = useRef(false);  
+  const addressFinderInitialized = useRef(false);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useExecutingShoppingWarning(step === 4);
@@ -306,7 +307,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
               ...prevStatus,
               "Found a lower price! New price is £" + newPrice,
             ]);
-            submitUserInput({ accept: true }, sessionId)
+            submitUserInput({ accept: true }, sessionId);
             setGivenPrice(newPrice);
           } else {
             // Let user confirm that they are okay with the new price
@@ -343,6 +344,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         setIsLoading(false);
         setStep(2);
         setIsOpen(true);
+        setErrorCode(data?.data?.errors[0]?.error_code);
         setExecutionError(data?.data?.errors[0]?.message);
         if (eventSourceRef.current) {
           eventSourceRef.current.close();
@@ -578,7 +580,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     setExecutionError("Purchase cancelled due to price change");
     setIsLoading(false);
     setIsOpen(false);
-    submitUserInput({ accept: false }, sessionId)
+    submitUserInput({ accept: false }, sessionId);
     setStatus([]);
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
@@ -606,7 +608,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         <DialogTrigger asChild>
           <button className="bg-black rounded-lg w-full text-white py-1.5 flex justify-center gap-2">
             <ShoppingCart className="w-4" />
-              Buy Now
+            Buy Now
           </button>
         </DialogTrigger>
         <DialogContent className="w-full h-full md:w-[100vw] md:h-[100vh] flex justify-center overflow-y-auto">
@@ -805,35 +807,22 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                         )}
                       </div>
                     </div>
-                    {executionError && (
-                      <div className="p-4 mt-4 mb-4 rounded-lg bg-red-50 border border-red-200">
-                        <div className="flex items-center justify-center space-x-2">
-                          <svg
-                            className="w-5 h-5 text-red-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                          <p className="text-red-700">
-                            Oops! There was an error checking out. Please{" "}
-                            <a
-                              href={productLink}
-                              className="text-red-700 underline hover:text-red-800"
-                            >
-                              click here
-                            </a>{" "}
-                            to checkout manually.
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                    {executionError && (errorCode === "CHECKOUT-E0001" ? (
+                      <p className="text-red-700">
+                        The product is out of stock. Please try again later.
+                      </p>
+                    ) : (
+                      <p className="text-red-700">
+                        Oops! There was an error checking out. Please{" "}
+                        <a
+                          href={productLink}
+                          className="text-red-700 underline hover:text-red-800"
+                        >
+                          click here
+                        </a>{" "}
+                        to checkout directly through the supplier website.
+                      </p>
+                    ))}
                     <div className="flex justify-end">
                       <button
                         className={cn(
