@@ -899,7 +899,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                   <div className="font-semibold text-gray-800">
                     Your order has been placed with{" "}
                     <span className="font-bold">boots.com</span>. You&apos;ll
-                    receive an email from boots.com shortly...
+                    receive an email from boots.com shortly.
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">
