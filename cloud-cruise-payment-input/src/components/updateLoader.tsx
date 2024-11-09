@@ -8,7 +8,6 @@ export const StatusUpdatePopover = ({
   currentIndex: number;
   statusUpdates: string[];
 }) => {
-  console.log('statusUpdates', statusUpdates);
   // Calculate the scroll position to keep last three items visible
   const getScrollPosition = () => {
     if (statusUpdates.length <= 3) return 0;
