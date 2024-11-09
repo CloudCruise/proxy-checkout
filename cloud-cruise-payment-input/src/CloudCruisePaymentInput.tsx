@@ -293,8 +293,6 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
 
     eventSourceRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log(data);
-      console.log("Received status:", data?.data?.current_step);
       if (data.event === "interaction.waiting") {
         const msg: string = data.data?.message;
         if (msg.startsWith("New price:")) {
@@ -328,7 +326,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       if (data.event === "execution.success") {
         setDeliverBy(data.data?.results?.[0]?.deliver_by ?? "");
         setOrderNumber(data.data?.results?.[0]?.order_number?.toString() ?? "");
-        setOrderTotal(data.data?.results?.[0]?.order_total?.toString() ?? "");
+        setOrderTotal(data.data?.results?.[0]?.order_price?.toString() ?? "");
         setIsLoading(false);
         setStep(5);
         setIsOpen(true);
@@ -982,7 +980,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       </Dialog>
       {isLoading && (
         <StatusUpdatePopover
-          currentIndex={status.length - 3}
+          currentIndex={status.length}
           statusUpdates={status}
         />
       )}
