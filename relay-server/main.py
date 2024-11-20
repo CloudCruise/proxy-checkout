@@ -71,29 +71,30 @@ def trigger_checkout(payload: CheckoutData) -> ResponseSession:
     cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT") + "/run"
     if cloudcruise_endpoint is None:
         cloudcruise_endpoint = "http://localhost:8000/run"
+    payload =  {
+        "$BOOTS_LINK": payload.bootsLink,
+        "$STORED_PRICE": payload.storedPrice,
+        "$FIRST_NAME": payload.firstName,
+        "$LAST_NAME": payload.lastName,
+        "$EMAIL": payload.email,
+        "$PHONE": payload.phone,
+        "$SHIPPING_HOUSE_NUMBER": payload.shippingHouseNumber,
+        "$SHIPPING_STREET_NAME": payload.shippingStreetName,
+        "$SHIPPING_POSTCODE": payload.shippingPostcode,
+        "$SHIPPING_CITY": payload.shippingCity,
+        "$CARD_HOLDER": payload.cardHolder,
+        "$CARD_BIN": payload.cardBin,
+        "$CARD_NUMBER": payload.cardNumber,
+        "$CARD_EXPIRY_YEAR": payload.cardExpiryYear,
+        "$CARD_EXPIRY_MONTH": payload.cardExpiryMonth,
+        "$CARD_CVV": payload.cardCvv
+    }
     response = requests.post(
         cloudcruise_endpoint,
         headers={"cc-key": os.environ["REDBRAIN_CC_API_KEY"]},
         json={
             "workflow_id": "873b7626-a85d-48fe-834f-a9346e4b6b81",
-            "run_input_variables": {
-                "$BOOTS_LINK": payload.bootsLink,
-                "$STORED_PRICE": payload.storedPrice,
-                "$FIRST_NAME": payload.firstName,
-                "$LAST_NAME": payload.lastName,
-                "$EMAIL": payload.email,
-                "$PHONE": payload.phone,
-                "$SHIPPING_HOUSE_NUMBER": payload.shippingHouseNumber,
-                "$SHIPPING_STREET_NAME": payload.shippingStreetName,
-                "$SHIPPING_POSTCODE": payload.shippingPostcode,
-                "$SHIPPING_CITY": payload.shippingCity,
-                "$CARD_HOLDER": payload.cardHolder,
-                "$CARD_BIN": payload.cardBin,
-                "$CARD_NUMBER": payload.cardNumber,
-                "$CARD_EXPIRY_YEAR": payload.cardExpiryYear,
-                "$CARD_EXPIRY_MONTH": payload.cardExpiryMonth,
-                "$CARD_CVV": payload.cardCvv
-            }
+            "run_input_variables": payload
         }
     )
     return response.json()
