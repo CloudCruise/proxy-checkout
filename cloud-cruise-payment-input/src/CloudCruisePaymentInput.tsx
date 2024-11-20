@@ -22,6 +22,7 @@ interface CloudCruisePaymentInputProps {
     price?: string;
     estimatedshippingbusinessdays?: string;
     estimatedshippingcost?: string;
+    merchant?: string;
   };
 }
 
@@ -79,7 +80,8 @@ export async function triggerCheckout(
   cardNumber: string,
   cardExpiryYear: string,
   cardExpiryMonth: string,
-  cardCvv: string
+  cardCvv: string,
+  merchant: string
 ): Promise<RunResponse | ErrorResponse> {
   try {
     const response = await fetch(
@@ -106,6 +108,7 @@ export async function triggerCheckout(
           cardExpiryYear,
           cardExpiryMonth,
           cardCvv,
+          merchant
         }),
       }
     );
@@ -204,6 +207,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     price,
     estimatedshippingbusinessdays: estimatedShipping,
     estimatedshippingcost: estimatedShippingCost,
+    merchant: merchant
   } = props.container ?? {};
   const [givenPrice, setGivenPrice] = useState(price);
   const [isLoading, setIsLoading] = useState(false);
@@ -510,7 +514,8 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         evervaultCardDetails?.card.expiry.month
           ? evervaultCardDetails.card.expiry.month
           : "0",
-        evervaultCardDetails?.card.cvc ? evervaultCardDetails.card.cvc : "0"
+        evervaultCardDetails?.card.cvc ? evervaultCardDetails.card.cvc : "0",
+        merchant ?? ""
       )
         .then((response) => {
           if ("error" in response) {
@@ -805,22 +810,23 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                         )}
                       </div>
                     </div>
-                    {executionError && (errorCode === "CHECKOUT-E0001" ? (
-                      <p className="text-red-700">
-                        The product is out of stock. Please try again later.
-                      </p>
-                    ) : (
-                      <p className="text-red-700">
-                        Oops! There was an error checking out. Please{" "}
-                        <a
-                          href={productLink}
-                          className="text-red-700 underline hover:text-red-800"
-                        >
-                          click here
-                        </a>{" "}
-                        to checkout directly through the supplier website.
-                      </p>
-                    ))}
+                    {executionError &&
+                      (errorCode === "CHECKOUT-E0001" ? (
+                        <p className="text-red-700">
+                          The product is out of stock. Please try again later.
+                        </p>
+                      ) : (
+                        <p className="text-red-700">
+                          Oops! There was an error checking out. Please{" "}
+                          <a
+                            href={productLink}
+                            className="text-red-700 underline hover:text-red-800"
+                          >
+                            click here
+                          </a>{" "}
+                          to checkout directly through the supplier website.
+                        </p>
+                      ))}
                     <div className="flex justify-end">
                       <button
                         className={cn(
@@ -907,12 +913,14 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                       <div className="text-sm text-gray-800">Order Number</div>
                       <div className="text-sm text-gray-800">{orderNumber}</div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-gray-800">
-                        Expected Delivery
+                    {deliverBy !== "" && (
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-gray-800">
+                          Expected Delivery
+                        </div>
+                        <div className="text-sm text-gray-800">{deliverBy}</div>
                       </div>
-                      <div className="text-sm text-gray-800">{deliverBy}</div>
-                    </div>
+                    )}
                     <div className="flex justify-between items-center">
                       <div className="text-sm text-gray-800">Order Total</div>
                       <div className="text-sm text-gray-800">{orderTotal}</div>

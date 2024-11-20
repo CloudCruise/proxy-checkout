@@ -11,11 +11,23 @@ interface Product {
   price: string;
   estimatedshippingbusinessdays: string;
   estimatedshippingcost: string;
+  merchant: string;
   scenario?: string;
 }
 
 const ProductListing: React.FC = () => {
   const products: Product[] = [
+    // ELF
+    {
+      productlink: "https://www.elfcosmetics.co.uk/best-brushes-and-tools-of-2024/19453.html",
+      productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw0206cb92/2024/Bundles/HOLIDAYECOMEXCLUSIVE/19453_1124_HOLIDAY_ECOMMM_PDP_BUNDLES_BESTOFBRUSHES_TOOLS.jpg?sw=700&q=90&yocs=1c_1e_1g_",
+      productdescription: "Best Brushes & Tools of 2024",
+      price: "40",
+      estimatedshippingbusinessdays: "3",
+      estimatedshippingcost: "4.50",
+      scenario: "ELF checkout",
+      merchant: "elf"
+    },
     // The OG
     {
       productlink: "https://www.awin1.com/pclick.php?p=36455819997&a=176013&m=2041",
@@ -24,7 +36,8 @@ const ProductListing: React.FC = () => {
       price: "3.15",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
-      scenario: "The OG"
+      scenario: "The OG",
+      merchant: "boots"
     },
     // Out of stock
     {
@@ -34,7 +47,8 @@ const ProductListing: React.FC = () => {
       price: "49.99",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
-      scenario: "Out of stock"
+      scenario: "Out of stock",
+      merchant: "boots"
     },
     // 100 pounds
     {
@@ -44,7 +58,8 @@ const ProductListing: React.FC = () => {
       price: "100.80",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
-      scenario: "100 pounds"
+      scenario: "100 pounds",
+      merchant: "boots"
     },
     // Price lower
     {
@@ -54,7 +69,8 @@ const ProductListing: React.FC = () => {
       price: "30.00",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
-      scenario: "Price lower"
+      scenario: "Price lower",
+      merchant: "boots"
     },
     // Price higher
     {
@@ -64,7 +80,8 @@ const ProductListing: React.FC = () => {
       price: "26.50",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
-      scenario: "Price higher"
+      scenario: "Price higher",
+      merchant: "boots"
     }
   ];
 

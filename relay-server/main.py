@@ -48,6 +48,7 @@ class CheckoutData(BaseModel):
     cardExpiryYear: str
     cardExpiryMonth: str
     cardCvv: str
+    merchant: str
 
 class ResponseSession(BaseModel):
     session_id: str
@@ -71,7 +72,7 @@ def trigger_checkout(payload: CheckoutData) -> ResponseSession:
     cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT") + "/run"
     if cloudcruise_endpoint is None:
         cloudcruise_endpoint = "http://localhost:8000/run"
-    payload =  {
+    cc_payload =  {
         "$BOOTS_LINK": payload.bootsLink,
         "$STORED_PRICE": payload.storedPrice,
         "$FIRST_NAME": payload.firstName,
@@ -89,12 +90,19 @@ def trigger_checkout(payload: CheckoutData) -> ResponseSession:
         "$CARD_EXPIRY_MONTH": payload.cardExpiryMonth,
         "$CARD_CVV": payload.cardCvv
     }
+    if payload.merchant == "boots":
+        workflow_id = '873b7626-a85d-48fe-834f-a9346e4b6b81'
+    elif payload.merchant == "elf":
+        workflow_id = '383c77ff-1873-4793-aeab-eeaa112d6b04'
+    else:
+        raise HTTPException(status_code=400, detail="Merchant not supported")
+
     response = requests.post(
         cloudcruise_endpoint,
         headers={"cc-key": os.environ["REDBRAIN_CC_API_KEY"]},
         json={
-            "workflow_id": "873b7626-a85d-48fe-834f-a9346e4b6b81",
-            "run_input_variables": payload
+            "workflow_id": workflow_id,
+            "run_input_variables": cc_payload
         }
     )
     return response.json()
