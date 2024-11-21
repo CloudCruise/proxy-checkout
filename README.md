@@ -12,7 +12,6 @@ const product = {
   price: "40",
   estimatedshippingbusinessdays: "3",
   estimatedshippingcost: "4.50",
-  scenario: "ELF checkout",
   merchant: "elf"
 };
 const root = ReactDOM.createRoot(
