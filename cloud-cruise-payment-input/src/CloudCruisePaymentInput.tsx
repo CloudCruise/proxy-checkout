@@ -197,6 +197,15 @@ function useExecutingShoppingWarning(isExecutingShopping: boolean) {
   return { showWarning, confirmUnload, cancelUnload };
 }
 
+function formatUKPostcode(postcode: string): string {
+    const cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
+
+    if (cleanPostcode.length < 5) return cleanPostcode;
+    
+    const inwardCodeStart = cleanPostcode.length - 3;
+    return `${cleanPostcode.slice(0, inwardCodeStart)} ${cleanPostcode.slice(inwardCodeStart)}`;
+}
+
 const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   props
 ) => {
@@ -501,7 +510,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         phone,
         splitAddressIntoHouseNumber(address)[0],
         splitAddressIntoHouseNumber(address)[1],
-        postcode,
+        formatUKPostcode(postcode),
         city,
         nameOnCard,
         evervaultCardDetails?.card.bin ? evervaultCardDetails.card.bin : "0",
