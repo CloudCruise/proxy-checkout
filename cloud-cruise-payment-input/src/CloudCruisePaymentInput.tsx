@@ -13,6 +13,7 @@ import { Card, EvervaultProvider, themes } from "@evervault/react";
 import { AddressFinder } from "@ideal-postcodes/address-finder";
 import { StatusUpdatePopover } from "./components/updateLoader";
 import { PriceChangeDialog } from "./components/priceChangeUserInput";
+import { VerificationCodeDialog } from "./components/verificationCodeDialog";
 
 interface CloudCruisePaymentInputProps {
   container?: {
@@ -241,6 +242,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const [deliverBy, setDeliverBy] = useState("");
   const [orderTotal, setOrderTotal] = useState("");
   const [openUserInputDialog, setOpenUserInputDialog] = useState(false);
+  const [openVerificationDialog, setOpenVerificationDialog] = useState(false);
   const addressFinderInitialized = useRef(false);
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -325,6 +327,9 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
             setOpenUserInputDialog(true);
             setGivenPrice(newPrice);
           }
+        } else if (msg.startsWith("Verification code")) {
+          console.log("Verification code required");
+          setOpenVerificationDialog(true);
         }
       }
       if (data?.data?.current_step) {
@@ -1008,6 +1013,26 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         newPrice={givenPrice}
         onAccept={handleAcceptPrice}
         onDecline={handleDeclinePrice}
+      />
+      <VerificationCodeDialog
+        open={openVerificationDialog}
+        onOpenChange={setOpenVerificationDialog}
+        onSubmit={(code) => {
+          setOpenVerificationDialog(false);
+          submitUserInput({ verification_code: code }, sessionId);
+        }}
+        onCancel={() => {
+          setOpenVerificationDialog(false);
+          setExecutionError("Purchase cancelled due to verification");
+          setIsLoading(false);
+          setIsOpen(false);
+          if (eventSourceRef.current) {
+            eventSourceRef.current.close();
+            eventSourceRef.current = null;
+          }
+          setStatus([]);
+          setExecutionError("");
+        }}
       />
       <Toaster />
     </EvervaultProvider>
