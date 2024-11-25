@@ -53,6 +53,44 @@ class CheckoutData(BaseModel):
 class ResponseSession(BaseModel):
     session_id: str
 
+def get_county_from_postcode(postcode):
+    """
+    Lookup county information for a UK postcode using postcodes.io API
+    
+    Args:
+        postcode (str): UK postcode (spaces are okay)
+        
+    Returns:
+        dict: County information including traditional and administrative counties
+        None: If postcode is invalid or lookup fails
+    """
+    # Clean the postcode
+    postcode = postcode.strip().replace(' ', '')
+    
+    # Make the API request
+    url = f'https://api.postcodes.io/postcodes/{postcode}'
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise exception for bad status codes
+        
+        data = response.json()
+        if data['status'] == 200:
+            result = data['result']
+            return {
+                'traditional_county': result.get('traditional_county'),
+                'admin_county': result.get('admin_county'),
+                'admin_district': result.get('admin_district'),
+                'region': result.get('region')
+            }
+        return None
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Error making API request: {e}")
+        return None
+    except (KeyError, ValueError) as e:
+        print(f"Error parsing response: {e}")
+        return None
+
 @app.post("/run/{session_id}/user_interaction")
 def user_interaction(session_id: str, payload: dict):
     cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT") + f"/run/{session_id}/user_interaction"
@@ -94,6 +132,9 @@ def trigger_checkout(payload: CheckoutData) -> ResponseSession:
         workflow_id = '873b7626-a85d-48fe-834f-a9346e4b6b81'
     elif payload.merchant == "elf":
         workflow_id = '383c77ff-1873-4793-aeab-eeaa112d6b04'
+        # Get county information from postcode
+        result = get_county_from_postcode(payload.shippingPostcode).get('admin_district')
+        cc_payload["$SHIPPING_COUNTY"] = result
     else:
         raise HTTPException(status_code=400, detail="Merchant not supported")
 
