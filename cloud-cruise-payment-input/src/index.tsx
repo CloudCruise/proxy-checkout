@@ -19,10 +19,10 @@ const ProductListing: React.FC = () => {
   const products: Product[] = [
     // ELF
     {
-      productlink: "https://www.elfcosmetics.co.uk/best-brushes-and-tools-of-2024/19453.html",
-      productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw0206cb92/2024/Bundles/HOLIDAYECOMEXCLUSIVE/19453_1124_HOLIDAY_ECOMMM_PDP_BUNDLES_BESTOFBRUSHES_TOOLS.jpg?sw=700&q=90&yocs=1c_1e_1g_",
+      productlink: "https://www.elfcosmetics.co.uk/power-grip-primer/82846.html",
+      productimage: "https://www.elfcosmetics.co.uk/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw2f4f2324/2024/ProjectPrimetime/PRIMETIME_PDP_F6.jpg?sw=425&q=90",
       productdescription: "Best Brushes & Tools of 2024",
-      price: "40",
+      price: "10",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "4.50",
       scenario: "ELF checkout",
