@@ -344,9 +344,9 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       }
 
       if (data.event === "execution.success") {
-        setDeliverBy(data.data?.results?.[0]?.deliver_by ?? "");
-        setOrderNumber(data.data?.results?.[0]?.order_number?.toString() ?? "");
-        setOrderTotal(data.data?.results?.[0]?.order_price?.toString() ?? "");
+        setDeliverBy(data.payload?.data?.deliver_by ?? "");
+        setOrderNumber(data.payload?.data?.order_number ?? "");
+        setOrderTotal(data.payload?.data?.order_price ?? "");
         setIsLoading(false);
         setStep(5);
         setIsOpen(true);
