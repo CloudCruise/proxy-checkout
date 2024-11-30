@@ -12,7 +12,8 @@ const product = {
   price: "40",
   estimatedshippingbusinessdays: "3",
   estimatedshippingcost: "4.50",
-  merchant: "elf"
+  merchant: "e.l.f. Cosmetics",
+  merchantDomain: "elfcosmetics.co.uk"
 };
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

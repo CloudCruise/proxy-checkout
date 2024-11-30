@@ -130,7 +130,7 @@ def trigger_checkout(payload: CheckoutData) -> ResponseSession:
     }
     if payload.merchant == "boots":
         workflow_id = '873b7626-a85d-48fe-834f-a9346e4b6b81'
-    elif payload.merchant == "elf":
+    elif payload.merchant == "e.l.f. Cosmetics":
         workflow_id = '383c77ff-1873-4793-aeab-eeaa112d6b04'
         # Get county information from postcode
         result = get_county_from_postcode(payload.shippingPostcode).get('admin_district')

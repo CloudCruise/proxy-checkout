@@ -24,6 +24,7 @@ interface CloudCruisePaymentInputProps {
     estimatedshippingbusinessdays?: string;
     estimatedshippingcost?: string;
     merchant?: string;
+    merchantDomain?: string;
   };
 }
 
@@ -217,7 +218,8 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     price,
     estimatedshippingbusinessdays: estimatedShipping,
     estimatedshippingcost: estimatedShippingCost,
-    merchant: merchant
+    merchant: merchant,
+    merchantDomain: merchantDomain
   } = props.container ?? {};
   const [givenPrice, setGivenPrice] = useState(price);
   const [isLoading, setIsLoading] = useState(false);
@@ -915,9 +917,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                 <div className="flex flex-col gap-2">
                   <div className="text-3xl">Thanks for the order!</div>
                   <div className="font-semibold text-gray-800">
-                    Your order has been placed with{" "}
-                    <span className="font-bold">boots.com</span>. You&apos;ll
-                    receive an email from boots.com shortly.
+                    Your order has been placed with {" "} <span className="font-bold">{merchant}</span>. You&apos;ll receive an order confirmation email from {merchantDomain} shortly.
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">

@@ -12,6 +12,7 @@ interface Product {
   estimatedshippingbusinessdays: string;
   estimatedshippingcost: string;
   merchant: string;
+  merchantDomain: string;
   scenario?: string;
 }
 
@@ -26,7 +27,8 @@ const ProductListing: React.FC = () => {
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "4.50",
       scenario: "ELF checkout",
-      merchant: "elf"
+      merchant: "e.l.f. Cosmetics",
+      merchantDomain: "elfcosmetics.co.uk"
     },
     // The OG
     {
@@ -37,7 +39,8 @@ const ProductListing: React.FC = () => {
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
       scenario: "The OG",
-      merchant: "boots"
+      merchant: "boots",
+      merchantDomain: "boots.com"
     },
     // Out of stock
     {
@@ -48,7 +51,8 @@ const ProductListing: React.FC = () => {
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
       scenario: "Out of stock",
-      merchant: "boots"
+      merchant: "boots",
+      merchantDomain: "boots.com"
     },
     // 100 pounds
     {
@@ -59,7 +63,8 @@ const ProductListing: React.FC = () => {
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
       scenario: "100 pounds",
-      merchant: "boots"
+      merchant: "boots",
+      merchantDomain: "boots.com"
     },
     // Price lower
     {
@@ -70,7 +75,8 @@ const ProductListing: React.FC = () => {
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
       scenario: "Price lower",
-      merchant: "boots"
+      merchant: "boots",
+      merchantDomain: "boots.com"
     },
     // Price higher
     {
@@ -81,7 +87,8 @@ const ProductListing: React.FC = () => {
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "3.95",
       scenario: "Price higher",
-      merchant: "boots"
+     merchant: "boots",
+     merchantDomain: "boots.com"
     }
   ];
 
