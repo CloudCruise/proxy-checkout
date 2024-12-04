@@ -42,6 +42,17 @@ const ProductListing: React.FC = () => {
       merchant: "e.l.f. Cosmetics",
       merchantDomain: "elfcosmetics.co.uk"
     },
+    { // Expensive
+      productlink: "https://www.elfcosmetics.co.uk/glow-reviver-quad-goals-lip-oil-kit/82618.html",
+      productimage: "https://www.elfcosmetics.co.uk/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw18e228df/2024/GlowReviverQuadGoals/062524_EXCLUSIVE_GIFTS_N_KITS_LIPOIL_600dpi_RGB_IGF-2.jpg?sw=700&q=90",
+      productdescription: "The New Classics Eyeshadow Palette",
+      price: "32",
+      estimatedshippingbusinessdays: "3",
+      estimatedshippingcost: "4.50",
+      scenario: "ELF checkout 3",
+      merchant: "e.l.f. Cosmetics",
+      merchantDomain: "elfcosmetics.co.uk"
+    },
     // Price changed
     {
       productlink: "https://uk.redbrain.shop/redirect/retailer?provider=RAKUTEN&gclid=wl-quiz&utm_source=syndication&url=aHR0cHM6Ly9jbGljay5saW5rc3luZXJneS5jb20vZGVlcGxpbms%2FaWQ9cGZ4TktTbmdsSU0mbWlkPTQyNDQ4Jm11cmw9aHR0cHMlM0ElMkYlMkZ3d3cuZWxmY29zbWV0aWNzLmNvLnVrJTJGaDIwLXByb29mLWV5ZWxpbmVyLXBlbiUyRjIwMDA3OS5odG1s",
