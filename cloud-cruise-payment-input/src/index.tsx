@@ -22,74 +22,50 @@ const ProductListing: React.FC = () => {
     {
       productlink: "https://www.elfcosmetics.co.uk/power-grip-primer/82846.html",
       productimage: "https://www.elfcosmetics.co.uk/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw2f4f2324/2024/ProjectPrimetime/PRIMETIME_PDP_F6.jpg?sw=425&q=90",
-      productdescription: "Best Brushes & Tools of 2024",
+      productdescription: "Power Grip Primer",
       price: "10",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "4.50",
-      scenario: "ELF checkout",
+      scenario: "ELF checkout 1",
       merchant: "e.l.f. Cosmetics",
       merchantDomain: "elfcosmetics.co.uk"
     },
     // The OG
     {
-      productlink: "https://www.awin1.com/pclick.php?p=36455819997&a=176013&m=2041",
-      productimage: "https://boots.scene7.com/is/image/Boots/10336444?op_sharpen=1",
-      productdescription: "Graze Smokey Barbeque Crunch Sharing Bag -100G",
-      price: "3.15",
+      productlink: "https://uk.redbrain.shop/redirect/retailer?provider=RAKUTEN&gclid=wl-quiz&utm_source=syndication&url=aHR0cHM6Ly93d3cuZWxmY29zbWV0aWNzLmNvLnVrL3BvcmVsZXNzLXB1dHR5LXByaW1lci84NTkxMi5odG1s",
+      productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw79f0a7c1/2019/85912_OpenA_R.jpg?sfrm=png&sw=700&q=90&yocs=1c_1e_1g_",
+      productdescription: "Poreless Putty Primer",
+      price: "10",
       estimatedshippingbusinessdays: "3",
-      estimatedshippingcost: "3.95",
-      scenario: "The OG",
-      merchant: "boots",
-      merchantDomain: "boots.com"
+      estimatedshippingcost: "4.50",
+      scenario: "ELF checkout 2",
+      merchant: "e.l.f. Cosmetics",
+      merchantDomain: "elfcosmetics.co.uk"
+    },
+    // Price changed
+    {
+      productlink: "https://uk.redbrain.shop/redirect/retailer?provider=RAKUTEN&gclid=wl-quiz&utm_source=syndication&url=aHR0cHM6Ly9jbGljay5saW5rc3luZXJneS5jb20vZGVlcGxpbms%2FaWQ9cGZ4TktTbmdsSU0mbWlkPTQyNDQ4Jm11cmw9aHR0cHMlM0ElMkYlMkZ3d3cuZWxmY29zbWV0aWNzLmNvLnVrJTJGaDIwLXByb29mLWV5ZWxpbmVyLXBlbiUyRjIwMDA3OS5odG1s",
+      productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw70d9d63a/81109_IntenseH2OProofEyelinerPen_JetBlackA.jpg?sfrm=png&sw=700&q=90&yocs=1c_1e_1g_",
+      productdescription: "H2O Proof Eyeliner Pen",
+      price: "6",
+      estimatedshippingbusinessdays: "3",
+      estimatedshippingcost: "4.50",
+      scenario: "Price changed",
+      merchant: "e.l.f. Cosmetics",
+      merchantDomain: "elfcosmetics.co.uk"
     },
     // Out of stock
     {
-      productlink: "https://www.awin1.com/pclick.php?p=36893232470&a=176013&m=2041",
-      productimage: "https://boots.scene7.com/is/image/Boots/10340364?op_sharpen=1",
-      productdescription: "LEGO Classic Creative Houses Building Toys",
-      price: "49.99",
+      productlink: "https://www.elfcosmetics.co.uk/best-brushes-and-tools-of-2024/19453.html",
+      productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw0206cb92/2024/Bundles/HOLIDAYECOMEXCLUSIVE/19453_1124_HOLIDAY_ECOMMM_PDP_BUNDLES_BESTOFBRUSHES_TOOLS.jpg?sw=700&q=90&yocs=1c_1e_1g_",
+      productdescription: "Best Brushes & Tools of 2024",
+      price: "40",
       estimatedshippingbusinessdays: "3",
-      estimatedshippingcost: "3.95",
+      estimatedshippingcost: "4.50",
       scenario: "Out of stock",
-      merchant: "boots",
-      merchantDomain: "boots.com"
+      merchant: "e.l.f. Cosmetics",
+      merchantDomain: "elfcosmetics.co.uk"
     },
-    // 100 pounds
-    {
-      productlink: "https://www.awin1.com/pclick.php?p=39120246588&a=176013&m=2041",
-      productimage: "https://boots.scene7.com/is/image/Boots/10333351?op_sharpen=1",
-      productdescription: "Gucci Guilty Elixir de Parfum for Her 60ml",
-      price: "100.80",
-      estimatedshippingbusinessdays: "3",
-      estimatedshippingcost: "3.95",
-      scenario: "100 pounds",
-      merchant: "boots",
-      merchantDomain: "boots.com"
-    },
-    // Price lower
-    {
-      productlink: "https://www.awin1.com/pclick.php?p=35554270752&a=176013&m=2041",
-      productimage: "https://boots.scene7.com/is/image/Boots/10320150?op_sharpen=1",
-      productdescription: "IT Cosmetics Your Skin But Better CC+ Nude Glow Tan Tan",
-      price: "30.00",
-      estimatedshippingbusinessdays: "3",
-      estimatedshippingcost: "3.95",
-      scenario: "Price lower",
-      merchant: "boots",
-      merchantDomain: "boots.com"
-    },
-    // Price higher
-    {
-      productlink: "https://www.awin1.com/pclick.php?p=26878383073&a=176013&m=2041",
-      productimage: "https://boots.scene7.com/is/image/Boots/10275560?op_sharpen=1",
-      productdescription: "BaBylissMEN Precision Cut Hair Clipper",
-      price: "26.50",
-      estimatedshippingbusinessdays: "3",
-      estimatedshippingcost: "3.95",
-      scenario: "Price higher",
-     merchant: "boots",
-     merchantDomain: "boots.com"
-    }
   ];
 
   return (
