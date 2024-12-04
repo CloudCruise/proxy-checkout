@@ -314,7 +314,6 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         const msg: string = data.data?.message;
         if (msg.startsWith("New price:")) {
           const newPrice = msg.split(":")[1].trim().slice(1);
-          console.log("New price:", newPrice);
           if (Number(newPrice) < Number(givenPrice)) {
             // If price has decreased just continue and show user that we found a better price
             console.log("Price has decreased, continuing with purchase");
@@ -336,10 +335,28 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       }
       if (data?.data?.current_step) {
         if (statusRef.current.length === 0) {
-          setStatus((prevStatus) => [...prevStatus, data?.data?.current_step]);
+          if (data?.data?.current_step === ' Start') {
+            setStatus((prevStatus) => [...prevStatus, "Starting checkout..."]);
+          }
         }
         if (data?.data?.next_step) {
-          setStatus((prevStatus) => [...prevStatus, data?.data?.next_step]);
+          if (data?.data?.next_step === 'Is there a cookie banner?') {
+            setStatus((prevStatus) => [...prevStatus, "Confirming product is in stock"]);
+          } else if (data?.data?.next_step === 'Has price changed?') {
+            setStatus((prevStatus) => [...prevStatus, "Confirming price"]);
+          } else if (data?.data?.next_step === 'Is there a verification code?') {
+            setStatus((prevStatus) => [...prevStatus, "Confirming the order"]);
+          } else if (data?.data?.next_step === 'Click on view bag') {
+            setStatus((prevStatus) => [...prevStatus, "Proceeding to purchase"]);
+          } else if (data?.data?.next_step === 'Enter address') {
+            setStatus((prevStatus) => [...prevStatus, "Securely transmitting shipping address"]);
+          } else if (data?.data?.next_step === 'Continue to payment') {
+            setStatus((prevStatus) => [...prevStatus, "Securely transmitting billing address"]);
+          } else if (data?.data?.next_step === 'Place Order') {
+            setStatus((prevStatus) => [...prevStatus, "Securely transmitting encrypted card details"]);
+          } else if (data?.data?.next_step === 'Phone verification requires trigger?') {
+            setStatus((prevStatus) => [...prevStatus, "Please confirm the purchase on your phone"]);
+          }
         }
       }
 
