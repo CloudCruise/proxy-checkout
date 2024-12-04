@@ -335,12 +335,12 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       }
       if (data?.data?.current_step) {
         if (statusRef.current.length === 0) {
-          if (data?.data?.current_step === ' Start') {
+          if (data?.data?.current_step === 'Start') {
             setStatus((prevStatus) => [...prevStatus, "Starting checkout..."]);
           }
         }
         if (data?.data?.next_step) {
-          if (data?.data?.next_step === 'Is there a cookie banner?') {
+          if (data?.data?.next_step === 'Accept cookies') {
             setStatus((prevStatus) => [...prevStatus, "Confirming product is in stock"]);
           } else if (data?.data?.next_step === 'Has price changed?') {
             setStatus((prevStatus) => [...prevStatus, "Confirming price"]);
