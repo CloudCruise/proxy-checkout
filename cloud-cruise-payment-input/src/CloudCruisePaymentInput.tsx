@@ -344,9 +344,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
             setStatus((prevStatus) => [...prevStatus, "Confirming product is in stock"]);
           } else if (data?.data?.next_step === 'Has price changed?') {
             setStatus((prevStatus) => [...prevStatus, "Confirming price"]);
-          } else if (data?.data?.next_step === 'Is there a verification code?') {
-            setStatus((prevStatus) => [...prevStatus, "Confirming the order"]);
-          } else if (data?.data?.next_step === 'Click on view bag') {
+          } else if (data?.data?.next_step === 'Add item to basket') {
             setStatus((prevStatus) => [...prevStatus, "Proceeding to purchase"]);
           } else if (data?.data?.next_step === 'Enter address') {
             setStatus((prevStatus) => [...prevStatus, "Securely transmitting shipping address"]);
