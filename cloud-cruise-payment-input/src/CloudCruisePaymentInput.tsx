@@ -547,6 +547,10 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
             toast.error("Failed to place order", {
               description: response.error,
             })
+            if (response.error.includes('postcode')) {
+              // If postcode is invalid, navigate to personal info page
+              setStep(1)
+            } 
           } else {
             setIsLoading(true);
             setSessionId(response.session_id);
