@@ -466,7 +466,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     else if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Email is invalid";
 
     if (!phone) errors.phone = "Phone number is required";
-    else if (!/^\d{10,}$/.test(phone.replace(/\D/g, "")))
+    else if (!/^\d{10,11}$/.test(phone.replace(/\D/g, "")))
       errors.phone = "Phone number is invalid";
 
     if (!firstName) errors.firstName = "First name is required";
@@ -679,9 +679,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                             "tel"
                           )}
                           <div className="text-xs text-gray-500">
-                            We may need to contact you about your delivery. To
-                            receive SMS delivery updates, please enter a mobile
-                            number
+                            We may need to contact you about your delivery.
                           </div>
                         </div>
                       </div>
