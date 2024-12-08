@@ -114,14 +114,15 @@ export async function triggerCheckout(
         }),
       }
     );
+    if (response.status !== 200) {
+      const data = await response.json();
+      return {error: data?.detail}
+    }
     const data: RunResponse = await response.json();
     return data;
   } catch (error: any) {
-    console.error("Failed to fetch worker console data:", error);
-    const errorResponse: ErrorResponse = {
-      error: error.message || "Unknown error",
-    };
-    return errorResponse;
+    console.error("Failed to trigger cheackout");
+    return {error: error?.detail}
   }
 }
 
@@ -152,51 +153,6 @@ export async function submitUserInput(
     };
     return errorResponse;
   }
-}
-
-function useExecutingShoppingWarning(isExecutingShopping: boolean) {
-  const [showWarning, setShowWarning] = useState(false);
-  const [isUnloading, setIsUnloading] = useState(false);
-
-  const handleBeforeUnload = useCallback(
-    (event: BeforeUnloadEvent) => {
-      if (isExecutingShopping && !isUnloading) {
-        event.preventDefault();
-        event.returnValue = "";
-        setShowWarning(true);
-        return "";
-      }
-    },
-    [isExecutingShopping, isUnloading]
-  );
-
-  useEffect(() => {
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [handleBeforeUnload]);
-
-  const confirmUnload = useCallback(() => {
-    setIsUnloading(true);
-    // Perform any necessary actions here
-    // For example, save data to localStorage
-    localStorage.setItem(
-      "unsavedData",
-      JSON.stringify({
-        /* your data here */
-      })
-    );
-    // Then allow the page to unload
-    window.removeEventListener("beforeunload", handleBeforeUnload);
-    window.close(); // This may not work in all browsers due to security restrictions
-  }, [handleBeforeUnload]);
-
-  const cancelUnload = useCallback(() => {
-    setShowWarning(false);
-  }, []);
-
-  return { showWarning, confirmUnload, cancelUnload };
 }
 
 function formatUKPostcode(postcode: string): string {
@@ -248,7 +204,45 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const addressFinderInitialized = useRef(false);
   const eventSourceRef = useRef<EventSource | null>(null);
 
-  useExecutingShoppingWarning(step === 4);
+  const handleUnload = useCallback(() => {
+    if (step === 4 && sessionId) {
+      const payload = {
+        reasoning: 'user interrupted checkout',
+        full_url: window.location.href,
+        error_code: 'CHECKOUT-E0004'
+      };
+      const blob = new Blob([JSON.stringify(payload)], {
+        type: 'application/json'
+      });
+      const result = navigator.sendBeacon(
+        `${process.env.REACT_APP_BACKEND_URL}/run/${sessionId}/interrupt`,
+        blob
+      );
+      console.log("Beacon sent:", result)
+    }
+  }, [step, sessionId]);
+  
+  const handleBeforeUnload = useCallback(
+    (event: BeforeUnloadEvent) => {
+      if (step === 4) {
+        event.preventDefault();
+        event.returnValue = "";
+        return "";
+      }
+    },
+    [step]
+  );
+
+  // Set up both unload and beforeunload listeners
+  useEffect(() => {
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('unload', handleUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('unload', handleUnload);
+    };
+  }, [handleBeforeUnload, handleUnload]);
 
   function splitAddressIntoHouseNumber(input: string): [string, string] {
     // Trim the input string to remove any leading/trailing whitespace
@@ -466,7 +460,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     else if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Email is invalid";
 
     if (!phone) errors.phone = "Phone number is required";
-    else if (!/^\d{10,11}$/.test(phone.replace(/\D/g, "")))
+    else if (!/^0\d{9,10}$/.test(phone.replace(/\D/g, "")))
       errors.phone = "Phone number is invalid";
 
     if (!firstName) errors.firstName = "First name is required";
@@ -552,11 +546,13 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
           if ("error" in response) {
             toast.error("Failed to place order", {
               description: response.error,
-            });
+            })
           } else {
             setIsLoading(true);
             setSessionId(response.session_id);
             console.log("Session ID:", response.session_id);
+            setStep(4);
+            setIsOpen(false);
           }
         })
         .catch((error) => {
@@ -564,9 +560,6 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
             description: error.message,
           });
         });
-      setStep(4);
-      setIsLoading(true);
-      setIsOpen(false);
     }
   };
 

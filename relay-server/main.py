@@ -50,6 +50,10 @@ class CheckoutData(BaseModel):
     cardCvv: str
     merchant: str
 
+class InterruptRunPayload(BaseModel):
+    reasoning: str
+    full_url: str
+    error_code: str
 class ResponseSession(BaseModel):
     session_id: str
 
@@ -90,6 +94,25 @@ def get_county_from_postcode(postcode):
     except (KeyError, ValueError) as e:
         print(f"Error parsing response: {e}")
         return None
+
+@app.post("/run/{session_id}/interrupt")
+def interrupt(session_id: str, payload: InterruptRunPayload):
+    cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT") + f"/failed_item"
+    if cloudcruise_endpoint is None:
+        cloudcruise_endpoint = f"http://localhost:8000/failed_item"
+    response = requests.post(
+        cloudcruise_endpoint,
+        headers={
+            "cc-key": os.environ["REDBRAIN_CC_API_KEY"],
+            "x-session-id": session_id
+        },
+        json={
+            "reasoning": payload.reasoning,
+            "full_url": payload.full_url,
+            "error_code": payload.error_code
+        }
+    )
+    return response.json()
 
 @app.post("/run/{session_id}/user_interaction")
 def user_interaction(session_id: str, payload: dict):
@@ -133,8 +156,10 @@ def trigger_checkout(payload: CheckoutData) -> ResponseSession:
     elif payload.merchant == "e.l.f. Cosmetics":
         workflow_id = '383c77ff-1873-4793-aeab-eeaa112d6b04'
         # Get county information from postcode
-        result = get_county_from_postcode(payload.shippingPostcode).get('admin_district')
-        cc_payload["$SHIPPING_COUNTY"] = result
+        result = get_county_from_postcode(payload.shippingPostcode)
+        if result is None:
+            raise HTTPException(status_code=400, detail="Please check your postcode")
+        cc_payload["$SHIPPING_COUNTY"] = result.get('admin_district')
     else:
         raise HTTPException(status_code=400, detail="Merchant not supported")
 
