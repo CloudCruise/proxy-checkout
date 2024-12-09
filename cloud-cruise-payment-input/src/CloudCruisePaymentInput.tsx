@@ -209,7 +209,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       const payload = {
         reasoning: 'user interrupted checkout',
         full_url: window.location.href,
-        error_code: 'CHECKOUT-E0004'
+        error_code: 'CHECKOUT-E0005'
       };
       const blob = new Blob([JSON.stringify(payload)], {
         type: 'application/json'
