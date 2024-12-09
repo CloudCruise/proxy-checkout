@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./index.scss";
 import { Input } from "./components/ui/input";
-import { ShoppingCart, ShieldCheckIcon } from "lucide-react";
+import { ShoppingCart, ShieldCheckIcon, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "./components/ui/dialog";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
@@ -201,6 +201,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const [orderTotal, setOrderTotal] = useState("");
   const [openUserInputDialog, setOpenUserInputDialog] = useState(false);
   const [openVerificationDialog, setOpenVerificationDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const addressFinderInitialized = useRef(false);
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -512,60 +513,76 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     return false;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validatePaymentForm()) {
-      // Send request to backend
-      console.log("Sending request to backend...");
-      triggerCheckout(
-        productLink ?? "",
-        "£" + givenPrice,
-        firstName,
-        lastName,
-        email,
-        phone,
-        splitAddressIntoHouseNumber(address)[0],
-        splitAddressIntoHouseNumber(address)[1],
-        formatUKPostcode(postcode),
-        city,
-        nameOnCard,
-        evervaultCardDetails?.card.bin ? evervaultCardDetails.card.bin : "0",
-        evervaultCardDetails?.card.number
-          ? evervaultCardDetails.card.number
-          : "0",
-        evervaultCardDetails?.card.expiry.year
-          ? "20" + evervaultCardDetails.card.expiry.year
-          : "0",
-        evervaultCardDetails?.card.expiry.month
-          ? evervaultCardDetails.card.expiry.month
-          : "0",
-        evervaultCardDetails?.card.cvc ? evervaultCardDetails.card.cvc : "0",
-        merchant ?? ""
-      )
-        .then((response) => {
-          if ("error" in response) {
-            toast.error("Failed to place order", {
-              description: response.error,
-            })
-            if (response.error.includes('postcode')) {
-              // If postcode is invalid, navigate to personal info page
-              setStep(1)
-            } 
-          } else {
-            setIsLoading(true);
-            setSessionId(response.session_id);
-            console.log("Session ID:", response.session_id);
-            setStep(4);
-            setIsOpen(false);
-          }
-        })
-        .catch((error) => {
+    if (validatePaymentForm() && !isSubmitting) {
+      setIsSubmitting(true);
+      try {
+        console.log("Sending request to backend...");
+        const response = await triggerCheckout(
+          productLink ?? "",
+          "£" + givenPrice,
+          firstName,
+          lastName,
+          email,
+          phone,
+          splitAddressIntoHouseNumber(address)[0],
+          splitAddressIntoHouseNumber(address)[1],
+          formatUKPostcode(postcode),
+          city,
+          nameOnCard,
+          evervaultCardDetails?.card.bin ? evervaultCardDetails.card.bin : "0",
+          evervaultCardDetails?.card.number ? evervaultCardDetails.card.number : "0",
+          evervaultCardDetails?.card.expiry.year ? "20" + evervaultCardDetails.card.expiry.year : "0",
+          evervaultCardDetails?.card.expiry.month ? evervaultCardDetails.card.expiry.month : "0",
+          evervaultCardDetails?.card.cvc ? evervaultCardDetails.card.cvc : "0",
+          merchant ?? ""
+        );
+
+        if ("error" in response) {
           toast.error("Failed to place order", {
-            description: error.message,
+            description: response.error,
           });
+          if (response.error.includes('postcode')) {
+            setStep(1);
+          }
+        } else {
+          setIsLoading(true);
+          setSessionId(response.session_id);
+          console.log("Session ID:", response.session_id);
+          setStep(4);
+          setIsOpen(false);
+        }
+      } catch (error: any) {
+        toast.error("Failed to place order", {
+          description: error.message,
         });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
+
+  const renderPaymentButton = () => (
+    <button
+      className={cn(
+        "py-1.5 px-5 rounded-lg flex items-center justify-center gap-2",
+        (checkPaymentFilledOut() === false || isSubmitting)
+          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+          : "bg-black text-white"
+      )}
+      disabled={!checkPaymentFilledOut() || isSubmitting}
+    >
+      {isSubmitting ? (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Processing...
+        </>
+      ) : (
+        "Pay & Place Order"
+      )}
+    </button>
+  );
 
   const renderInput = (
     name: keyof FormErrors,
@@ -854,16 +871,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                         </p>
                       ))}
                     <div className="flex justify-end">
-                      <button
-                        className={cn(
-                          "py-1.5 px-5 rounded-lg flex items-center justify-center",
-                          checkPaymentFilledOut() === false
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            : "bg-black text-white"
-                        )}
-                      >
-                        Pay & Place Order
-                      </button>
+                      {renderPaymentButton()}
                     </div>
                   </form>
                 )}
