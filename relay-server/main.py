@@ -28,6 +28,7 @@ app.add_middleware(
 # Add this global dictionary to store active SSE connections
 active_connections = {}
 
+
 class CheckoutData(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
