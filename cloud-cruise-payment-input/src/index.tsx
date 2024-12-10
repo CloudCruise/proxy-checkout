@@ -45,7 +45,7 @@ const ProductListing: React.FC = () => {
     { // Expensive
       productlink: "https://go.skimresources.com/?id=62334X1400846&xs=1&url=https%3A%2F%2Fwww.elfcosmetics.co.uk%2Fglow-reviver-quad-goals-lip-oil-kit%2F82618.html",
       productimage: "https://www.elfcosmetics.co.uk/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw18e228df/2024/GlowReviverQuadGoals/062524_EXCLUSIVE_GIFTS_N_KITS_LIPOIL_600dpi_RGB_IGF-2.jpg?sw=700&q=90",
-      productdescription: "The New Classics Eyeshadow Palette",
+      productdescription: "Glow Reviver Quad Goals Lip Oil Kit",
       price: "32",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "4.50",
