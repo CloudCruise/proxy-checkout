@@ -206,23 +206,51 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const eventSourceRef = useRef<EventSource | null>(null);
 
   const handleUnload = useCallback(() => {
-    if (step === 4 && sessionId) {
-      const payload = {
-        reasoning: 'user interrupted checkout',
-        full_url: window.location.href,
-        error_code: 'CHECKOUT-E0005'
-      };
-      const blob = new Blob([JSON.stringify(payload)], {
-        type: 'application/json'
+  if (step === 4 && sessionId) {
+    const payload = {
+      reasoning: 'user interrupted checkout',
+      full_url: window.location.href,
+      error_code: 'CHECKOUT-E0005'
+    };
+    
+    // Create the blob
+    const blob = new Blob([JSON.stringify(payload)], {
+      type: 'application/json'
+    });
+    
+    // Send beacon and log result
+    const beaconUrl = `${process.env.REACT_APP_BACKEND_URL}/run/${sessionId}/interrupt`;
+    const result = navigator.sendBeacon(beaconUrl, blob);
+    
+    // Debug logging
+    console.log({
+      event: 'Beacon sent',
+      success: result,
+      payload,
+      url: beaconUrl,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Alternative debugging approach using fetch
+    if (!result) {
+      // If beacon fails, try fetch as fallback and for debugging
+      fetch(beaconUrl, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        // Keep-alive to ensure request completes
+        keepalive: true
+      }).then(response => {
+        console.log('Fallback fetch response:', response.status);
+      }).catch(error => {
+        console.error('Fallback fetch failed:', error);
       });
-      const result = navigator.sendBeacon(
-        `${process.env.REACT_APP_BACKEND_URL}/run/${sessionId}/interrupt`,
-        blob
-      );
-      console.log("Beacon sent:", result)
     }
-  }, [step, sessionId]);
-  
+  }
+}, [step, sessionId]);
+
   const handleBeforeUnload = useCallback(
     (event: BeforeUnloadEvent) => {
       if (step === 4) {
