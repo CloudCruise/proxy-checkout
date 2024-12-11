@@ -6,13 +6,14 @@ This is a React component that can be easily integrated into any frontend. Here'
 
 ```
 const product = {
-  productlink: "https://www.awin1.com/pclick.php?p=36455819997&a=176013&m=2041",
-  productimage: "https://boots.scene7.com/is/image/Boots/10336444?op_sharpen=1",
-  productdescription:
-    "Graze Smokey Barbeque Crunch Sharing Bag -100G",
-  price: "3.15",
+  productlink: "https://www.elfcosmetics.co.uk/best-brushes-and-tools-of-2024/19453.html",
+  productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw0206cb92/2024/Bundles/HOLIDAYECOMEXCLUSIVE/19453_1124_HOLIDAY_ECOMMM_PDP_BUNDLES_BESTOFBRUSHES_TOOLS.jpg?sw=700&q=90&yocs=1c_1e_1g_",
+  productdescription: "Best Brushes & Tools of 2024",
+  price: "40",
   estimatedshippingbusinessdays: "3",
-  estimatedshippingcost: "3.75",
+  estimatedshippingcost: "4.50",
+  merchant: "e.l.f. Cosmetics",
+  merchantDomain: "elfcosmetics.co.uk"
 };
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

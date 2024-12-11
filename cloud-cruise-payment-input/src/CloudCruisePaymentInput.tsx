@@ -2,12 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./index.scss";
 import { Input } from "./components/ui/input";
-import {
-  ShoppingCart,
-  ShieldCheckIcon,
-  Loader2,
-  CheckCircleIcon,
-} from "lucide-react";
+import { ShoppingCart, ShieldCheckIcon, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "./components/ui/dialog";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
@@ -16,52 +11,9 @@ import images, { CardImages } from "react-payment-inputs/images";
 import { cn } from "./lib/utils";
 import { Card, EvervaultProvider, themes } from "@evervault/react";
 import { AddressFinder } from "@ideal-postcodes/address-finder";
-
-const StatusUpdatePopover: React.FC<{
-  currentIndex: number;
-  statusUpdates: string[];
-}> = ({ currentIndex, statusUpdates }) => (
-  <div
-    className="fixed inset-0 flex items-center justify-center z-50 "
-    style={{ zIndex: 9999 }}
-  >
-    <div className="absolute inset-0 bg-white" />
-    <div className="z-10">
-      <div className="flex flex-col gap-16 p-5">
-        <div className="text-2xl">
-          The Checkout Concierge is placing your order
-        </div>
-        <div className="max-h-[130px] h-[130px] overflow-hidden flex flex-col gap-5 gradient-text text-lg transition-all">
-          <div
-            className="flex flex-col gap-5 w-full transition-all"
-            style={{ marginTop: `${-(currentIndex * 43 - 43)}px` }}
-          >
-            {statusUpdates.map((status, index) => (
-              <div
-                key={index}
-                className={cn("flex gap-5 items-center justify-start", {})}
-              >
-                <CheckCircleIcon
-                  className={cn(
-                    "w-5 h-5",
-                    index <= currentIndex ? "text-green-500" : "text-gray-300"
-                  )}
-                />
-                <div>{status}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <div className="flex items-center justify-center">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            <div className="text-gray-700">Checkout in progress</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+import { StatusUpdatePopover } from "./components/updateLoader";
+import { PriceChangeDialog } from "./components/priceChangeUserInput";
+import { VerificationCodeDialog } from "./components/verificationCodeDialog";
 
 interface CloudCruisePaymentInputProps {
   container?: {
@@ -71,19 +23,26 @@ interface CloudCruisePaymentInputProps {
     price?: string;
     estimatedshippingbusinessdays?: string;
     estimatedshippingcost?: string;
+    merchant?: string;
+    merchantDomain?: string;
   };
 }
 
-interface FormErrors {
-  email?: string;
-  phone?: string;
-  firstName?: string;
-  lastName?: string;
-  address?: string;
-  city?: string;
-  postcode?: string;
-  nameOnCard?: string;
-}
+  interface FormErrors {
+    email?: string;
+    phone?: string;
+    firstName?: string;
+    lastName?: string;
+    address?: string;
+    city?: string;
+    postcode?: string;
+    nameOnCard?: string;
+    billingFirstName?: string;
+    billingLastName?: string;
+    billingAddress?: string;
+    billingCity?: string;
+    billingPostcode?: string;
+  }
 
 const theme = themes.clean({
   styles: {
@@ -128,7 +87,14 @@ export async function triggerCheckout(
   cardNumber: string,
   cardExpiryYear: string,
   cardExpiryMonth: string,
-  cardCvv: string
+  cardCvv: string,
+  merchant: string,
+  sameAsShipping: boolean,
+  billingFirstName: string,
+  billingLastName: string,
+  billingAddress: string,
+  billingPostcode: string,
+  billingCity: string
 ): Promise<RunResponse | ErrorResponse> {
   try {
     const response = await fetch(
@@ -155,6 +121,43 @@ export async function triggerCheckout(
           cardExpiryYear,
           cardExpiryMonth,
           cardCvv,
+          merchant,
+          sameAsShipping,
+          billingFirstName: billingFirstName,
+          billingLastName: billingLastName,
+          billingAddress: billingAddress,
+          billingPostcode: billingPostcode,
+          billingCity: billingCity
+        }),
+      }
+    );
+    if (response.status !== 200) {
+      const data = await response.json();
+      return {error: data?.detail}
+    }
+    const data: RunResponse = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error("Failed to trigger checkout");
+    return {error: error?.detail}
+  }
+}
+
+export async function submitUserInput(
+  userInput: Record<string, any>,
+  sessionId: string
+): Promise<RunResponse | ErrorResponse> {
+  await new Promise((resolve) => setTimeout(resolve, 2000)); // wait for 2 seconds
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/run/${sessionId}/user_interaction`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userInput,
         }),
       }
     );
@@ -169,49 +172,13 @@ export async function triggerCheckout(
   }
 }
 
-function useExecutingShoppingWarning(isExecutingShopping: boolean) {
-  const [showWarning, setShowWarning] = useState(false);
-  const [isUnloading, setIsUnloading] = useState(false);
+function formatUKPostcode(postcode: string): string {
+    const cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
 
-  const handleBeforeUnload = useCallback(
-    (event: BeforeUnloadEvent) => {
-      if (isExecutingShopping && !isUnloading) {
-        event.preventDefault();
-        event.returnValue = "";
-        setShowWarning(true);
-        return "";
-      }
-    },
-    [isExecutingShopping, isUnloading]
-  );
-
-  useEffect(() => {
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [handleBeforeUnload]);
-
-  const confirmUnload = useCallback(() => {
-    setIsUnloading(true);
-    // Perform any necessary actions here
-    // For example, save data to localStorage
-    localStorage.setItem(
-      "unsavedData",
-      JSON.stringify({
-        /* your data here */
-      })
-    );
-    // Then allow the page to unload
-    window.removeEventListener("beforeunload", handleBeforeUnload);
-    window.close(); // This may not work in all browsers due to security restrictions
-  }, [handleBeforeUnload]);
-
-  const cancelUnload = useCallback(() => {
-    setShowWarning(false);
-  }, []);
-
-  return { showWarning, confirmUnload, cancelUnload };
+    if (cleanPostcode.length < 5) return cleanPostcode;
+    
+    const inwardCodeStart = cleanPostcode.length - 3;
+    return `${cleanPostcode.slice(0, inwardCodeStart)} ${cleanPostcode.slice(inwardCodeStart)}`;
 }
 
 const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
@@ -224,14 +191,13 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     price,
     estimatedshippingbusinessdays: estimatedShipping,
     estimatedshippingcost: estimatedShippingCost,
+    merchant: merchant,
+    merchantDomain: merchantDomain
   } = props.container ?? {};
-  useEffect(() => {
-    console.log("Props received:", props);
-    // @ts-ignore
-    console.log("price", props?.container?.price);
-  }, [props]);
+  const [givenPrice, setGivenPrice] = useState(price);
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<string[]>([]);
+  const statusRef = useRef(status);
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -241,16 +207,94 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postcode, setPostcode] = useState("");
+  const [sameAsShipping, setSameAsShipping] = useState(true);
+  const [billingFirstName, setBillingFirstName] = useState("");
+  const [billingLastName, setBillingLastName] = useState("");
+  const [billingAddress, setBillingAddress] = useState("");
+  const [billingCity, setBillingCity] = useState("");
+  const [billingPostcode, setBillingPostcode] = useState("");
   const [nameOnCard, setNameOnCard] = useState("");
   const [cardInputReady, setCardInputReady] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [sessionId, setSessionId] = useState("");
   const [executionError, setExecutionError] = useState("");
+  const [errorCode, setErrorCode] = useState("");
   const [orderNumber, setOrderNumber] = useState("");
   const [deliverBy, setDeliverBy] = useState("");
+  const [orderTotal, setOrderTotal] = useState("");
+  const [openUserInputDialog, setOpenUserInputDialog] = useState(false);
+  const [openVerificationDialog, setOpenVerificationDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const addressFinderInitialized = useRef(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
-  useExecutingShoppingWarning(step === 4);
+  const handleUnload = useCallback(() => {
+  if (step === 4 && sessionId) {
+    const payload = {
+      reasoning: 'user interrupted checkout',
+      full_url: window.location.href,
+      error_code: 'CHECKOUT-E0005'
+    };
+    
+    // Create the blob
+    const blob = new Blob([JSON.stringify(payload)], {
+      type: 'application/json'
+    });
+    
+    // Send beacon and log result
+    const beaconUrl = `${process.env.REACT_APP_BACKEND_URL}/run/${sessionId}/interrupt`;
+    const result = navigator.sendBeacon(beaconUrl, blob);
+    
+    // Debug logging
+    console.log({
+      event: 'Beacon sent',
+      success: result,
+      payload,
+      url: beaconUrl,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Alternative debugging approach using fetch
+    if (!result) {
+      // If beacon fails, try fetch as fallback and for debugging
+      fetch(beaconUrl, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        // Keep-alive to ensure request completes
+        keepalive: true
+      }).then(response => {
+        console.log('Fallback fetch response:', response.status);
+      }).catch(error => {
+        console.error('Fallback fetch failed:', error);
+      });
+    }
+  }
+}, [step, sessionId]);
+
+  const handleBeforeUnload = useCallback(
+    (event: BeforeUnloadEvent) => {
+      if (step === 4) {
+        event.preventDefault();
+        event.returnValue = "";
+        return "";
+      }
+    },
+    [step]
+  );
+
+  // Set up both unload and beforeunload listeners
+  useEffect(() => {
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('unload', handleUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('unload', handleUnload);
+    };
+  }, [handleBeforeUnload, handleUnload]);
 
   function splitAddressIntoHouseNumber(input: string): [string, string] {
     // Trim the input string to remove any leading/trailing whitespace
@@ -290,6 +334,10 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   }, []);
 
   useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
+  useEffect(() => {
     if (step === 1 && isOpen === true) {
       // Wait for the DOM to update before initializing AddressFinder
       setTimeout(initAddressFinder, 0);
@@ -302,55 +350,104 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       return;
     }
 
-    const eventSource = new EventSource(
-      `http://localhost:8001/status/${sessionId}`
+    eventSourceRef.current = new EventSource(
+      `${process.env.REACT_APP_BACKEND_URL}/status/${sessionId}`
     );
 
-    eventSource.onmessage = (event) => {
+    eventSourceRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log(data);
-      console.log("Received status:", data?.data?.current_step);
+      if (data.event === "interaction.waiting") {
+        const msg: string = data.data?.message;
+        if (msg.startsWith("New price:")) {
+          const newPrice = msg.split(":")[1].trim().slice(1);
+          if (Number(newPrice) < Number(givenPrice)) {
+            // If price has decreased just continue and show user that we found a better price
+            console.log("Price has decreased, continuing with purchase");
+            setStatus((prevStatus) => [
+              ...prevStatus,
+              "Found a lower price! New price is £" + newPrice,
+            ]);
+            submitUserInput({ accept: true }, sessionId);
+            setGivenPrice(newPrice);
+          } else {
+            // Let user confirm that they are okay with the new price
+            setOpenUserInputDialog(true);
+            setGivenPrice(newPrice);
+          }
+        } else if (msg.startsWith("Verification code")) {
+          console.log("Verification code required");
+          setOpenVerificationDialog(true);
+        }
+      }
       if (data?.data?.current_step) {
-        if (status.length === 0) {
-          setStatus((prevStatus) => [...prevStatus, data?.data?.current_step]);
+        if (statusRef.current.length === 0) {
+          if (data?.data?.current_step === 'Start') {
+            setStatus((prevStatus) => [...prevStatus, "Starting checkout..."]);
+          }
         }
         if (data?.data?.next_step) {
-          setStatus((prevStatus) => [...prevStatus, data?.data?.next_step]);
+          if (data?.data?.next_step === 'Accept cookies') {
+            setStatus((prevStatus) => [...prevStatus, "Confirming product is in stock"]);
+          } else if (data?.data?.next_step === 'Has price changed?') {
+            setStatus((prevStatus) => [...prevStatus, "Confirming price"]);
+          } else if (data?.data?.next_step === 'Add item to basket') {
+            setStatus((prevStatus) => [...prevStatus, "Proceeding to purchase"]);
+          } else if (data?.data?.next_step === 'Enter address') {
+            setStatus((prevStatus) => [...prevStatus, "Securely transmitting shipping address"]);
+          } else if (data?.data?.next_step === 'Continue to payment') {
+            setStatus((prevStatus) => [...prevStatus, "Securely transmitting billing address"]);
+          } else if (data?.data?.next_step === 'Place Order') {
+            setStatus((prevStatus) => [...prevStatus, "Securely transmitting encrypted card details"]);
+          } else if (data?.data?.next_step === 'Phone verification requires trigger?') {
+            setStatus((prevStatus) => [...prevStatus, "Please confirm the purchase on your phone"]);
+          }
         }
       }
 
       if (data.event === "execution.success") {
-        setDeliverBy(data.data?.results?.[0]?.deliver_by ?? "");
-        setOrderNumber(data.data?.results?.[0]?.order_number?.toString() ?? "");
+        setDeliverBy(data.payload?.data?.deliver_by ?? "");
+        setOrderNumber(data.payload?.data?.order_number ?? "");
+        setOrderTotal(data.payload?.data?.order_price ?? "");
         setIsLoading(false);
         setStep(5);
         setIsOpen(true);
         toast.success("Order made successfully!", {
           description: "Your order has been placed and is being processed.",
         });
-        eventSource.close();
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
         setStatus([]);
       } else if (data.event === "execution.failed") {
         setIsLoading(false);
         setStep(2);
         setIsOpen(true);
-        toast.error("Order failed to make", {
-          description: data?.data?.errors[0]?.message,
-        });
+        setErrorCode(data?.data?.errors[0]?.error_code);
         setExecutionError(data?.data?.errors[0]?.message);
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
         setStatus([]);
       }
     };
 
-    eventSource.onerror = (error) => {
+    eventSourceRef.current.onerror = (error) => {
       console.error("EventSource failed:", error);
-      eventSource.close();
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
     };
 
     return () => {
-      eventSource.close();
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
     };
-  }, [sessionId, setStep, setIsOpen, status]);
+  }, [sessionId, setStep, setIsOpen]);
 
   const [evervaultCardDetails, setEvervaultCardDetails] = useState<{
     card: {
@@ -415,7 +512,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     else if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Email is invalid";
 
     if (!phone) errors.phone = "Phone number is required";
-    else if (!/^\d{10,}$/.test(phone.replace(/\D/g, "")))
+    else if (!/^0\d{9,10}$/.test(phone.replace(/\D/g, "")))
       errors.phone = "Phone number is invalid";
 
     if (!firstName) errors.firstName = "First name is required";
@@ -467,56 +564,82 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     return false;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validatePaymentForm()) {
-      // Send request to backend at localhost:8000
-      console.log("Sending request to backend...");
-      triggerCheckout(
-        productLink ?? "",
-        "£" + price,
-        firstName,
-        lastName,
-        email,
-        phone,
-        splitAddressIntoHouseNumber(address)[0],
-        splitAddressIntoHouseNumber(address)[1],
-        postcode,
-        city,
-        nameOnCard,
-        evervaultCardDetails?.card.bin ? evervaultCardDetails.card.bin : "0",
-        evervaultCardDetails?.card.number
-          ? evervaultCardDetails.card.number
-          : "0",
-        evervaultCardDetails?.card.expiry.year
-          ? "20" + evervaultCardDetails.card.expiry.year
-          : "0",
-        evervaultCardDetails?.card.expiry.month
-          ? evervaultCardDetails.card.expiry.month
-          : "0",
-        evervaultCardDetails?.card.cvc ? evervaultCardDetails.card.cvc : "0"
-      )
-        .then((response) => {
-          if ("error" in response) {
-            toast.error("Failed to place order", {
-              description: response.error,
-            });
-          } else {
-            setIsLoading(true);
-            setSessionId(response.session_id);
-            console.log("Session ID:", response.session_id);
-          }
-        })
-        .catch((error) => {
+    if (validatePaymentForm() && !isSubmitting) {
+      setIsSubmitting(true);
+      try {
+        console.log("Sending request to backend...");
+        const response = await triggerCheckout(
+          productLink ?? "",
+          "£" + givenPrice,
+          firstName,
+          lastName,
+          email,
+          phone,
+          splitAddressIntoHouseNumber(address)[0],
+          splitAddressIntoHouseNumber(address)[1],
+          formatUKPostcode(postcode),
+          city,
+          nameOnCard,
+          evervaultCardDetails?.card.bin ? evervaultCardDetails.card.bin : "0",
+          evervaultCardDetails?.card.number ? evervaultCardDetails.card.number : "0",
+          evervaultCardDetails?.card.expiry.year ? "20" + evervaultCardDetails.card.expiry.year : "0",
+          evervaultCardDetails?.card.expiry.month ? evervaultCardDetails.card.expiry.month : "0",
+          evervaultCardDetails?.card.cvc ? evervaultCardDetails.card.cvc : "0",
+          merchant ?? "",
+          sameAsShipping,
+          billingFirstName,
+          billingLastName,
+          billingAddress,
+          formatUKPostcode(billingPostcode),
+          billingCity
+        );
+
+        if ("error" in response) {
           toast.error("Failed to place order", {
-            description: error.message,
+            description: response.error,
           });
+          if (response.error.includes('postcode')) {
+            setStep(1);
+          }
+        } else {
+          setIsLoading(true);
+          setSessionId(response.session_id);
+          console.log("Session ID:", response.session_id);
+          setStep(4);
+          setIsOpen(false);
+        }
+      } catch (error: any) {
+        toast.error("Failed to place order", {
+          description: error.message,
         });
-      setStep(4);
-      setIsLoading(true);
-      setIsOpen(false);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
+
+  const renderPaymentButton = () => (
+    <button
+      className={cn(
+        "py-1.5 px-5 rounded-lg flex items-center justify-center gap-2",
+        (checkPaymentFilledOut() === false || isSubmitting)
+          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+          : "bg-black text-white"
+      )}
+      disabled={!checkPaymentFilledOut() || isSubmitting}
+    >
+      {isSubmitting ? (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Processing...
+        </>
+      ) : (
+        "Pay & Place Order"
+      )}
+    </button>
+  );
 
   const renderInput = (
     name: keyof FormErrors,
@@ -540,6 +663,103 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     </div>
   );
 
+  const handleAcceptPrice = () => {
+    setOpenUserInputDialog(false);
+    submitUserInput({ accept: true }, sessionId)
+      .then((response) => {
+        if ("error" in response) {
+          toast.error("Failed to update workflow", {
+            description: response.error,
+          });
+        }
+      })
+      .catch((error) => {
+        toast.error("Failed to place order", {
+          description: error.message,
+        });
+      });
+  };
+
+  const handleDeclinePrice = () => {
+    setOpenUserInputDialog(false);
+    setExecutionError("Purchase cancelled due to price change");
+    setIsLoading(false);
+    setIsOpen(false);
+    submitUserInput({ accept: false }, sessionId);
+    setStatus([]);
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+    setExecutionError("");
+  };
+
+  const renderBillingAddressSection = () => (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="sameAsShipping"
+          checked={sameAsShipping}
+          onChange={(e) => setSameAsShipping(e.target.checked)}
+          className="w-4 h-4 accent-black"
+        />
+        <label htmlFor="sameAsShipping" className="text-sm">
+          Billing address same as shipping
+        </label>
+      </div>
+      
+      {!sameAsShipping && (
+        <div className="flex flex-col gap-3 mt-2">
+          <h3 className="text-xl">Billing Address</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {renderInput(
+              "billingFirstName",
+              billingFirstName,
+              (e) => setBillingFirstName(e.target.value),
+              "First Name"
+            )}
+            {renderInput(
+              "billingLastName",
+              billingLastName,
+              (e) => setBillingLastName(e.target.value),
+              "Last Name"
+            )}
+          </div>
+          {renderInput(
+            "billingAddress",
+            billingAddress,
+            (e) => setBillingAddress(e.target.value),
+            "Address"
+          )}
+          {renderInput(
+            "billingCity",
+            billingCity,
+            (e) => setBillingCity(e.target.value),
+            "City"
+          )}
+          {renderInput(
+            "billingPostcode",
+            billingPostcode,
+            (e) => setBillingPostcode(e.target.value),
+            "Postcode"
+          )}
+          <div className="relative">
+            <div className="absolute right-0 h-full flex items-center mr-3">
+              <LockClosedIcon className="w-4 h-4 text-gray-600" />
+            </div>
+            <Input
+              type="text"
+              placeholder="Country"
+              value="United Kingdom"
+              disabled
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <EvervaultProvider
       teamId={process.env.REACT_APP_EVERVAULT_TEAM_ID ?? ""}
@@ -559,11 +779,11 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         <DialogTrigger asChild>
           <button className="bg-black rounded-lg w-full text-white py-1.5 flex justify-center gap-2">
             <ShoppingCart className="w-4" />
-            Checkout Concierge
+            Buy Now
           </button>
         </DialogTrigger>
-        <DialogContent className="w-[100vw] h-[100vh] flex justify-center">
-          <div className="flex flex-col gap-8 max-w-[1000px] w-full h-full py-10 ">
+        <DialogContent className="w-full h-full md:w-[100vw] md:h-[100vh] flex justify-center overflow-y-auto">
+          <div className="flex flex-col gap-8 max-w-[1000px] w-full h-full py-10 px-4 md:px-0">
             {step < 3 && (
               <div className="flex md:flex-row flex-col gap-5 h-full">
                 {step === 1 && (
@@ -596,9 +816,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                             "tel"
                           )}
                           <div className="text-xs text-gray-500">
-                            We may need to contact you about your delivery. To
-                            receive SMS delivery updates, please enter a mobile
-                            number
+                            We may need to contact you about your delivery.
                           </div>
                         </div>
                       </div>
@@ -756,24 +974,28 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                             </a>
                           </>
                         )}
+                        {renderBillingAddressSection()}
                       </div>
                     </div>
-                    {executionError && (
-                      <div className="text-red-500 text-center text-lg">
-                        {executionError}
-                      </div>
-                    )}
+                    {executionError &&
+                      (errorCode === "CHECKOUT-E0001" ? (
+                        <p className="text-red-700">
+                          The product is out of stock. Please try again later.
+                        </p>
+                      ) : (
+                        <p className="text-red-700">
+                          Oops! There was an error checking out. Please{" "}
+                          <a
+                            href={productLink}
+                            className="text-red-700 underline hover:text-red-800"
+                          >
+                            click here
+                          </a>{" "}
+                          to checkout directly through the supplier website.
+                        </p>
+                      ))}
                     <div className="flex justify-end">
-                      <button
-                        className={cn(
-                          "py-1.5 px-5 rounded-lg flex items-center justify-center",
-                          checkPaymentFilledOut() === false
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            : "bg-black text-white"
-                        )}
-                      >
-                        Pay & Place Order
-                      </button>
+                      {renderPaymentButton()}
                     </div>
                   </form>
                 )}
@@ -792,13 +1014,15 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                           {productDescription}
                         </div>
                       </div>
-                      <div className="font-semibold text-sm">£{price}</div>
+                      <div className="font-semibold text-sm">£{givenPrice}</div>
                     </div>
                     <div className="border-b border-gray-200" />
                     <div className="flex flex-col gap-1">
                       <div className="flex justify-between items-center">
                         <div className="text-sm text-gray-800">Subtotal</div>
-                        <div className="text-sm text-gray-800">£{price}</div>
+                        <div className="text-sm text-gray-800">
+                          £{givenPrice}
+                        </div>
                       </div>
                       <div className="flex justify-between items-center">
                         <div className="flex flex-col">
@@ -822,7 +1046,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                       <div className="text-2xl font-semibold">
                         £
                         {(
-                          Number(price) + Number(estimatedShippingCost)
+                          Number(givenPrice) + Number(estimatedShippingCost)
                         ).toFixed(2)}
                       </div>
                     </div>
@@ -835,9 +1059,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                 <div className="flex flex-col gap-2">
                   <div className="text-3xl">Thanks for the order!</div>
                   <div className="font-semibold text-gray-800">
-                    Your order has been placed with{" "}
-                    <span className="font-bold">boots.com</span>. You&apos;ll
-                    receive an email from boots.com shortly...
+                    Your order has been placed with {" "} <span className="font-bold">{merchant}</span>. You&apos;ll receive an order confirmation email from {merchantDomain} shortly.
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -847,15 +1069,17 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                       <div className="text-sm text-gray-800">Order Number</div>
                       <div className="text-sm text-gray-800">{orderNumber}</div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-gray-800">
-                        Expected Delivery
+                    {deliverBy !== "" && (
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-gray-800">
+                          Expected Delivery
+                        </div>
+                        <div className="text-sm text-gray-800">{deliverBy}</div>
                       </div>
-                      <div className="text-sm text-gray-800">{deliverBy}</div>
-                    </div>
+                    )}
                     <div className="flex justify-between items-center">
                       <div className="text-sm text-gray-800">Order Total</div>
-                      <div className="text-sm text-gray-800">£8.50</div>
+                      <div className="text-sm text-gray-800">{orderTotal}</div>
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="text-sm text-gray-800">
@@ -920,10 +1144,38 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
       </Dialog>
       {isLoading && (
         <StatusUpdatePopover
-          currentIndex={status.length - 3}
+          currentIndex={status.length}
           statusUpdates={status}
         />
       )}
+      <PriceChangeDialog
+        open={openUserInputDialog}
+        onOpenChange={setOpenUserInputDialog}
+        oldPrice={price}
+        newPrice={givenPrice}
+        onAccept={handleAcceptPrice}
+        onDecline={handleDeclinePrice}
+      />
+      <VerificationCodeDialog
+        open={openVerificationDialog}
+        onOpenChange={setOpenVerificationDialog}
+        onSubmit={(code) => {
+          setOpenVerificationDialog(false);
+          submitUserInput({ verification_code: code }, sessionId);
+        }}
+        onCancel={() => {
+          setOpenVerificationDialog(false);
+          setExecutionError("Purchase cancelled due to verification");
+          setIsLoading(false);
+          setIsOpen(false);
+          if (eventSourceRef.current) {
+            eventSourceRef.current.close();
+            eventSourceRef.current = null;
+          }
+          setStatus([]);
+          setExecutionError("");
+        }}
+      />
       <Toaster />
     </EvervaultProvider>
   );

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv("./.env.development")
 import time
 import os
 import hashlib
@@ -29,6 +29,7 @@ app.add_middleware(
 # Add this global dictionary to store active SSE connections
 active_connections = {}
 
+
 class CheckoutData(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -43,46 +44,152 @@ class CheckoutData(BaseModel):
     shippingStreetName: str
     shippingPostcode: str
     shippingCity: str
+    sameAsShipping: bool
+    billingFirstName: str
+    billingLastName: str
+    billingAddress: str
+    billingPostcode: str
+    billingCity: str
     cardHolder: str
     cardBin: str
     cardNumber: str
     cardExpiryYear: str
     cardExpiryMonth: str
     cardCvv: str
+    merchant: str
 
+class InterruptRunPayload(BaseModel):
+    reasoning: str
+    full_url: str
+    error_code: str
 class ResponseSession(BaseModel):
     session_id: str
+
+def get_county_from_postcode(postcode):
+    """
+    Lookup county information for a UK postcode using postcodes.io API
+    
+    Args:
+        postcode (str): UK postcode (spaces are okay)
+        
+    Returns:
+        dict: County information including traditional and administrative counties
+        None: If postcode is invalid or lookup fails
+    """
+    # Clean the postcode
+    postcode = postcode.strip().replace(' ', '')
+    
+    # Make the API request
+    url = f'https://api.postcodes.io/postcodes/{postcode}'
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise exception for bad status codes
+        
+        data = response.json()
+        if data['status'] == 200:
+            result = data['result']
+            return {
+                'traditional_county': result.get('traditional_county'),
+                'admin_county': result.get('admin_county'),
+                'admin_district': result.get('admin_district'),
+                'region': result.get('region')
+            }
+        return None
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Error making API request: {e}")
+        return None
+    except (KeyError, ValueError) as e:
+        print(f"Error parsing response: {e}")
+        return None
+
+@app.post("/run/{session_id}/interrupt")
+def interrupt(session_id: str, payload: InterruptRunPayload):
+    cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT") + f"/failed_item"
+    if cloudcruise_endpoint is None:
+        cloudcruise_endpoint = f"http://localhost:8000/failed_item"
+    response = requests.post(
+        cloudcruise_endpoint,
+        headers={
+            "cc-key": os.environ["REDBRAIN_CC_API_KEY"],
+            "x-session-id": session_id
+        },
+        json={
+            "reasoning": payload.reasoning,
+            "full_url": payload.full_url,
+            "error_code": payload.error_code
+        }
+    )
+    return response.json()
+
+@app.post("/run/{session_id}/user_interaction")
+def user_interaction(session_id: str, payload: dict):
+    cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT") + f"/run/{session_id}/user_interaction"
+    if cloudcruise_endpoint is None:
+        cloudcruise_endpoint = f"http://localhost:8000/run/{session_id}/user_interaction"
+    response = requests.post(
+        cloudcruise_endpoint,
+        headers={"cc-key": os.environ["REDBRAIN_CC_API_KEY"]},
+        json=payload['userInput']
+    )
+    return response.json()
 
 @app.post("/checkout")
 def trigger_checkout(payload: CheckoutData) -> ResponseSession:
     if not payload.cardHolder or payload.cardBin == 0:
         raise HTTPException(status_code=400, detail="Card holder and bin are required")
-    cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT")
+    cloudcruise_endpoint = os.environ.get("CLOUD_CRUISE_ENDPOINT") + "/run"
     if cloudcruise_endpoint is None:
         cloudcruise_endpoint = "http://localhost:8000/run"
+    cc_payload =  {
+        "$BOOTS_LINK": payload.bootsLink,
+        "$STORED_PRICE": payload.storedPrice,
+        "$FIRST_NAME": payload.firstName,
+        "$LAST_NAME": payload.lastName,
+        "$EMAIL": payload.email,
+        "$PHONE": payload.phone,
+        "$SHIPPING_HOUSE_NUMBER": payload.shippingHouseNumber,
+        "$SHIPPING_STREET_NAME": payload.shippingStreetName,
+        "$SHIPPING_POSTCODE": payload.shippingPostcode,
+        "$SHIPPING_CITY": payload.shippingCity,
+        "$SAME_AS_SHIPPING": payload.sameAsShipping,
+        "$BILLING_FIRST_NAME": payload.billingFirstName,
+        "$BILLING_LAST_NAME": payload.billingLastName,
+        "$BILLING_ADDRESS": payload.billingAddress,
+        "$BILLING_POSTCODE": payload.billingPostcode,
+        "$BILLING_CITY": payload.billingCity,
+        "$CARD_HOLDER": payload.cardHolder,
+        "$CARD_BIN": payload.cardBin,
+        "$CARD_NUMBER": payload.cardNumber,
+        "$CARD_EXPIRY_YEAR": payload.cardExpiryYear,
+        "$CARD_EXPIRY_MONTH": payload.cardExpiryMonth,
+        "$CARD_CVV": payload.cardCvv
+    }
+    if payload.merchant == "boots":
+        workflow_id = '873b7626-a85d-48fe-834f-a9346e4b6b81'
+    elif payload.merchant == "e.l.f. Cosmetics":
+        workflow_id = '383c77ff-1873-4793-aeab-eeaa112d6b04'
+        # Get county information from postcode
+        shipping_result = get_county_from_postcode(payload.shippingPostcode)
+        if shipping_result is None:
+            raise HTTPException(status_code=400, detail="Please check your shipping postcode")
+        if not payload.sameAsShipping:
+            billing_result = get_county_from_postcode(payload.billingPostcode)
+            if billing_result is None:
+                raise HTTPException(status_code=400, detail="Please check your billing postcode")
+            cc_payload["$BILLING_COUNTY"] = billing_result.get('admin_district')
+        else:
+            cc_payload["$BILLING_COUNTY"] = ""
+        cc_payload["$SHIPPING_COUNTY"] = shipping_result.get('admin_district')
+    else:
+        raise HTTPException(status_code=400, detail="Merchant not supported")
+
     response = requests.post(
         cloudcruise_endpoint,
         headers={"cc-key": os.environ["REDBRAIN_CC_API_KEY"]},
         json={
-            "workflow_id": "873b7626-a85d-48fe-834f-a9346e4b6b81",
-            "run_input_variables": {
-                "$BOOTS_LINK": payload.bootsLink,
-                "$STORED_PRICE": payload.storedPrice,
-                "$FIRST_NAME": payload.firstName,
-                "$LAST_NAME": payload.lastName,
-                "$EMAIL": payload.email,
-                "$PHONE": payload.phone,
-                "$SHIPPING_HOUSE_NUMBER": payload.shippingHouseNumber,
-                "$SHIPPING_STREET_NAME": payload.shippingStreetName,
-                "$SHIPPING_POSTCODE": payload.shippingPostcode,
-                "$SHIPPING_CITY": payload.shippingCity,
-                "$CARD_HOLDER": payload.cardHolder,
-                "$CARD_BIN": payload.cardBin,
-                "$CARD_NUMBER": payload.cardNumber,
-                "$CARD_EXPIRY_YEAR": payload.cardExpiryYear,
-                "$CARD_EXPIRY_MONTH": payload.cardExpiryMonth,
-                "$CARD_CVV": payload.cardCvv
-            }
+            "workflow_id": workflow_id,
+            "run_input_variables": cc_payload
         }
     )
     return response.json()
@@ -111,7 +218,7 @@ def verify_message(received_data, received_signature, secret_key):
         data_json = json.loads(received_data.decode('utf-8'))
     except json.JSONDecodeError as e:
         raise VerificationError("Failed to decode json: " + str(e), 400)
-    
+
     # Check if the expiration is sent
     expires_at = data_json.get("expires_at")
     if not expires_at:
@@ -124,7 +231,7 @@ def verify_message(received_data, received_signature, secret_key):
     # Check if the message is not expired
     if time.time() > expires_at:
         raise VerificationError("Webhook message expired.", 400)
-    
+
     return data_json
 
 async def process_cc_data(data, session_id):
