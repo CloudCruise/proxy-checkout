@@ -87,12 +87,10 @@ def get_county_from_postcode(postcode):
         data = response.json()
         if data['status'] == 200:
             result = data['result']
-            return {
-                'traditional_county': result.get('traditional_county'),
-                'admin_county': result.get('admin_county'),
-                'admin_district': result.get('admin_district'),
-                'region': result.get('region')
-            }
+            admin_county = result.get('admin_county')
+            if admin_county is None:
+                return result.get('admin_district')
+            return admin_county
         return None
         
     except requests.exceptions.RequestException as e:
@@ -176,10 +174,10 @@ def trigger_checkout(payload: CheckoutData) -> ResponseSession:
             billing_result = get_county_from_postcode(payload.billingPostcode)
             if billing_result is None:
                 raise HTTPException(status_code=400, detail="Please check your billing postcode")
-            cc_payload["$BILLING_COUNTY"] = billing_result.get('admin_district')
+            cc_payload["$BILLING_COUNTY"] = billing_result
         else:
             cc_payload["$BILLING_COUNTY"] = ""
-        cc_payload["$SHIPPING_COUNTY"] = shipping_result.get('admin_district')
+        cc_payload["$SHIPPING_COUNTY"] = shipping_result
     else:
         raise HTTPException(status_code=400, detail="Merchant not supported")
 
