@@ -43,6 +43,12 @@ class CheckoutData(BaseModel):
     shippingStreetName: str
     shippingPostcode: str
     shippingCity: str
+    sameAsShipping: bool
+    billingFirstName: str
+    billingLastName: str
+    billingAddress: str
+    billingPostcode: str
+    billingCity: str
     cardHolder: str
     cardBin: str
     cardNumber: str
@@ -145,6 +151,12 @@ def trigger_checkout(payload: CheckoutData) -> ResponseSession:
         "$SHIPPING_STREET_NAME": payload.shippingStreetName,
         "$SHIPPING_POSTCODE": payload.shippingPostcode,
         "$SHIPPING_CITY": payload.shippingCity,
+        "$SAME_AS_SHIPPING": payload.sameAsShipping,
+        "$BILLING_FIRST_NAME": payload.billingFirstName,
+        "$BILLING_LAST_NAME": payload.billingLastName,
+        "$BILLING_ADDRESS": payload.billingAddress,
+        "$BILLING_POSTCODE": payload.billingPostcode,
+        "$BILLING_CITY": payload.billingCity,
         "$CARD_HOLDER": payload.cardHolder,
         "$CARD_BIN": payload.cardBin,
         "$CARD_NUMBER": payload.cardNumber,
@@ -157,10 +169,17 @@ def trigger_checkout(payload: CheckoutData) -> ResponseSession:
     elif payload.merchant == "e.l.f. Cosmetics":
         workflow_id = '383c77ff-1873-4793-aeab-eeaa112d6b04'
         # Get county information from postcode
-        result = get_county_from_postcode(payload.shippingPostcode)
-        if result is None:
-            raise HTTPException(status_code=400, detail="Please check your postcode")
-        cc_payload["$SHIPPING_COUNTY"] = result.get('admin_district')
+        shipping_result = get_county_from_postcode(payload.shippingPostcode)
+        if shipping_result is None:
+            raise HTTPException(status_code=400, detail="Please check your shipping postcode")
+        if not payload.sameAsShipping:
+            billing_result = get_county_from_postcode(payload.billingPostcode)
+            if billing_result is None:
+                raise HTTPException(status_code=400, detail="Please check your billing postcode")
+            cc_payload["$BILLING_COUNTY"] = billing_result.get('admin_district')
+        else:
+            cc_payload["$BILLING_COUNTY"] = ""
+        cc_payload["$SHIPPING_COUNTY"] = shipping_result.get('admin_district')
     else:
         raise HTTPException(status_code=400, detail="Merchant not supported")
 

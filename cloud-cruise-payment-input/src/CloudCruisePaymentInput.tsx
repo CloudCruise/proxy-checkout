@@ -28,16 +28,21 @@ interface CloudCruisePaymentInputProps {
   };
 }
 
-interface FormErrors {
-  email?: string;
-  phone?: string;
-  firstName?: string;
-  lastName?: string;
-  address?: string;
-  city?: string;
-  postcode?: string;
-  nameOnCard?: string;
-}
+  interface FormErrors {
+    email?: string;
+    phone?: string;
+    firstName?: string;
+    lastName?: string;
+    address?: string;
+    city?: string;
+    postcode?: string;
+    nameOnCard?: string;
+    billingFirstName?: string;
+    billingLastName?: string;
+    billingAddress?: string;
+    billingCity?: string;
+    billingPostcode?: string;
+  }
 
 const theme = themes.clean({
   styles: {
@@ -83,7 +88,13 @@ export async function triggerCheckout(
   cardExpiryYear: string,
   cardExpiryMonth: string,
   cardCvv: string,
-  merchant: string
+  merchant: string,
+  sameAsShipping: boolean,
+  billingFirstName: string,
+  billingLastName: string,
+  billingAddress: string,
+  billingPostcode: string,
+  billingCity: string
 ): Promise<RunResponse | ErrorResponse> {
   try {
     const response = await fetch(
@@ -110,7 +121,13 @@ export async function triggerCheckout(
           cardExpiryYear,
           cardExpiryMonth,
           cardCvv,
-          merchant
+          merchant,
+          sameAsShipping,
+          billingFirstName: billingFirstName,
+          billingLastName: billingLastName,
+          billingAddress: billingAddress,
+          billingPostcode: billingPostcode,
+          billingCity: billingCity
         }),
       }
     );
@@ -121,7 +138,7 @@ export async function triggerCheckout(
     const data: RunResponse = await response.json();
     return data;
   } catch (error: any) {
-    console.error("Failed to trigger cheackout");
+    console.error("Failed to trigger checkout");
     return {error: error?.detail}
   }
 }
@@ -190,6 +207,12 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postcode, setPostcode] = useState("");
+  const [sameAsShipping, setSameAsShipping] = useState(true);
+  const [billingFirstName, setBillingFirstName] = useState("");
+  const [billingLastName, setBillingLastName] = useState("");
+  const [billingAddress, setBillingAddress] = useState("");
+  const [billingCity, setBillingCity] = useState("");
+  const [billingPostcode, setBillingPostcode] = useState("");
   const [nameOnCard, setNameOnCard] = useState("");
   const [cardInputReady, setCardInputReady] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -564,7 +587,13 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
           evervaultCardDetails?.card.expiry.year ? "20" + evervaultCardDetails.card.expiry.year : "0",
           evervaultCardDetails?.card.expiry.month ? evervaultCardDetails.card.expiry.month : "0",
           evervaultCardDetails?.card.cvc ? evervaultCardDetails.card.cvc : "0",
-          merchant ?? ""
+          merchant ?? "",
+          sameAsShipping,
+          billingFirstName,
+          billingLastName,
+          billingAddress,
+          formatUKPostcode(billingPostcode),
+          billingCity
         );
 
         if ("error" in response) {
@@ -664,6 +693,72 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     }
     setExecutionError("");
   };
+
+  const renderBillingAddressSection = () => (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="sameAsShipping"
+          checked={sameAsShipping}
+          onChange={(e) => setSameAsShipping(e.target.checked)}
+          className="w-4 h-4 accent-black"
+        />
+        <label htmlFor="sameAsShipping" className="text-sm">
+          Billing address same as shipping
+        </label>
+      </div>
+      
+      {!sameAsShipping && (
+        <div className="flex flex-col gap-3 mt-2">
+          <h3 className="text-xl">Billing Address</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {renderInput(
+              "billingFirstName",
+              billingFirstName,
+              (e) => setBillingFirstName(e.target.value),
+              "First Name"
+            )}
+            {renderInput(
+              "billingLastName",
+              billingLastName,
+              (e) => setBillingLastName(e.target.value),
+              "Last Name"
+            )}
+          </div>
+          {renderInput(
+            "billingAddress",
+            billingAddress,
+            (e) => setBillingAddress(e.target.value),
+            "Address"
+          )}
+          {renderInput(
+            "billingCity",
+            billingCity,
+            (e) => setBillingCity(e.target.value),
+            "City"
+          )}
+          {renderInput(
+            "billingPostcode",
+            billingPostcode,
+            (e) => setBillingPostcode(e.target.value),
+            "Postcode"
+          )}
+          <div className="relative">
+            <div className="absolute right-0 h-full flex items-center mr-3">
+              <LockClosedIcon className="w-4 h-4 text-gray-600" />
+            </div>
+            <Input
+              type="text"
+              placeholder="Country"
+              value="United Kingdom"
+              disabled
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <EvervaultProvider
@@ -879,6 +974,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
                             </a>
                           </>
                         )}
+                        {renderBillingAddressSection()}
                       </div>
                     </div>
                     {executionError &&
