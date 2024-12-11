@@ -19,7 +19,6 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         os.environ.get("ALLOW_ORIGIN"),
-        "https://redbrain-static-frontend.onrender.com"
     ],
     allow_credentials=True,
     allow_methods=["*"],
