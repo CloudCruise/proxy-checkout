@@ -53,12 +53,24 @@ const ProductListing: React.FC = () => {
       merchant: "e.l.f. Cosmetics",
       merchantDomain: "elfcosmetics.co.uk"
     },
-    // Price changed
+    // Price changed higher
     {
       productlink: "https://go.skimresources.com/?id=62334X1400846&xs=1&url=https%3A%2F%2Fwww.elfcosmetics.co.uk%2Fh2o-proof-eyeliner-pen%2F200079.html",
       productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw70d9d63a/81109_IntenseH2OProofEyelinerPen_JetBlackA.jpg?sfrm=png&sw=700&q=90&yocs=1c_1e_1g_",
       productdescription: "H2O Proof Eyeliner Pen",
       price: "6",
+      estimatedshippingbusinessdays: "3",
+      estimatedshippingcost: "4.50",
+      scenario: "Price changed",
+      merchant: "e.l.f. Cosmetics",
+      merchantDomain: "elfcosmetics.co.uk"
+    },
+    // Price changed lower
+    {
+      productlink: "https://go.skimresources.com/?id=62334X1400846&xs=1&url=https%3A%2F%2Fwww.elfcosmetics.co.uk%2Fh2o-proof-eyeliner-pen%2F200079.html",
+      productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw70d9d63a/81109_IntenseH2OProofEyelinerPen_JetBlackA.jpg?sfrm=png&sw=700&q=90&yocs=1c_1e_1g_",
+      productdescription: "H2O Proof Eyeliner Pen",
+      price: "8",
       estimatedshippingbusinessdays: "3",
       estimatedshippingcost: "4.50",
       scenario: "Price changed",
