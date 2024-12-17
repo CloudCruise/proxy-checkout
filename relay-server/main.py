@@ -248,7 +248,7 @@ async def webhook_endpoint(request: Request, background_tasks: BackgroundTasks):
         if os.environ.get("CLOUD_CRUISE_SECRET_KEY") is None:
             raise VerificationError("Please set your secret key", 400)
         cloud_cruise_data = verify_message(body, signature, os.environ["CLOUD_CRUISE_SECRET_KEY"])
-        data = cloud_cruise_data.get("data")
+        data = cloud_cruise_data.get("payload")
         session_id = data.get("session_id")
         background_tasks.add_task(process_cc_data, cloud_cruise_data, session_id)
         return {"message": "Webhook received successfully."}
