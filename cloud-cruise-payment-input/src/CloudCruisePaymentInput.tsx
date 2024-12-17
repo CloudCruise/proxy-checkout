@@ -357,7 +357,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
     eventSourceRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.event === "interaction.waiting") {
-        const msg: string = data.data?.message;
+        const msg: string = data.payload?.message;
         if (msg.startsWith("New price:")) {
           const newPrice = msg.split(":")[1].trim().slice(1);
           if (Number(newPrice) < Number(givenPrice)) {
@@ -379,26 +379,26 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
           setOpenVerificationDialog(true);
         }
       }
-      if (data?.data?.current_step) {
+      if (data?.payload?.current_step) {
         if (statusRef.current.length === 0) {
-          if (data?.data?.current_step === 'Start') {
+          if (data?.payload?.current_step === 'Start') {
             setStatus((prevStatus) => [...prevStatus, "Starting checkout..."]);
           }
         }
-        if (data?.data?.next_step) {
-          if (data?.data?.next_step === 'Accept cookies') {
+        if (data?.payload?.next_step) {
+          if (data?.payload?.next_step === 'Accept cookies') {
             setStatus((prevStatus) => [...prevStatus, "Confirming product is in stock"]);
-          } else if (data?.data?.next_step === 'Has price changed?') {
+          } else if (data?.payload?.next_step === 'Has price changed?') {
             setStatus((prevStatus) => [...prevStatus, "Confirming price"]);
-          } else if (data?.data?.next_step === 'Add item to basket') {
+          } else if (data?.payload?.next_step === 'Add item to basket') {
             setStatus((prevStatus) => [...prevStatus, "Proceeding to purchase"]);
-          } else if (data?.data?.next_step === 'Enter address') {
+          } else if (data?.payload?.next_step === 'Enter address') {
             setStatus((prevStatus) => [...prevStatus, "Securely transmitting shipping address"]);
-          } else if (data?.data?.next_step === 'Continue to payment') {
+          } else if (data?.payload?.next_step === 'Continue to payment') {
             setStatus((prevStatus) => [...prevStatus, "Securely transmitting billing address"]);
-          } else if (data?.data?.next_step === 'Place Order') {
+          } else if (data?.payload?.next_step === 'Place Order') {
             setStatus((prevStatus) => [...prevStatus, "Securely transmitting encrypted card details"]);
-          } else if (data?.data?.next_step === 'Phone verification requires trigger?') {
+          } else if (data?.payload?.next_step === 'Phone verification requires trigger?') {
             setStatus((prevStatus) => [...prevStatus, "Please confirm the purchase on your phone"]);
           }
         }
@@ -423,8 +423,8 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         setIsLoading(false);
         setStep(2);
         setIsOpen(true);
-        setErrorCode(data?.data?.errors[0]?.error_code);
-        setExecutionError(data?.data?.errors[0]?.message);
+        setErrorCode(data?.payload?.errors[0]?.error_code);
+        setExecutionError(data?.payload?.errors[0]?.message);
         if (eventSourceRef.current) {
           eventSourceRef.current.close();
           eventSourceRef.current = null;
