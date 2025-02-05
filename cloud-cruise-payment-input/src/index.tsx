@@ -20,7 +20,7 @@ const ProductListing: React.FC = () => {
   const products: Product[] = [
     // ELF
     {
-      productlink: "https://go.skimresources.com/?id=62334X1400846&xs=1&url=https%3A%2F%2Fwww.elfcosmetics.co.uk%2Fpower-grip-primer%2F82846.html",
+      productlink: "https://sovrn.co/10gvoww",
       productimage: "https://www.elfcosmetics.co.uk/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw2f4f2324/2024/ProjectPrimetime/PRIMETIME_PDP_F6.jpg?sw=425&q=90",
       productdescription: "Power Grip Primer",
       price: "10",
@@ -32,7 +32,7 @@ const ProductListing: React.FC = () => {
     },
     // The OG
     {
-      productlink: "https://go.skimresources.com/?id=62334X1400846&xs=1&url=https%3A%2F%2Fwww.elfcosmetics.co.uk%2Fporeless-putty-primer%2F85912.html",
+      productlink: "https://sovrn.co/vunj47s",
       productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw79f0a7c1/2019/85912_OpenA_R.jpg?sfrm=png&sw=700&q=90&yocs=1c_1e_1g_",
       productdescription: "Poreless Putty Primer",
       price: "10",
@@ -43,7 +43,7 @@ const ProductListing: React.FC = () => {
       merchantDomain: "elfcosmetics.co.uk"
     },
     { // Expensive
-      productlink: "https://go.skimresources.com/?id=62334X1400846&xs=1&url=https%3A%2F%2Fwww.elfcosmetics.co.uk%2Fglow-reviver-quad-goals-lip-oil-kit%2F82618.html",
+      productlink: "https://sovrn.co/m48ws9k",
       productimage: "https://www.elfcosmetics.co.uk/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw18e228df/2024/GlowReviverQuadGoals/062524_EXCLUSIVE_GIFTS_N_KITS_LIPOIL_600dpi_RGB_IGF-2.jpg?sw=700&q=90",
       productdescription: "Glow Reviver Quad Goals Lip Oil Kit",
       price: "32",
@@ -55,7 +55,7 @@ const ProductListing: React.FC = () => {
     },
     // Price changed higher
     {
-      productlink: "https://go.skimresources.com/?id=62334X1400846&xs=1&url=https%3A%2F%2Fwww.elfcosmetics.co.uk%2Fh2o-proof-eyeliner-pen%2F200079.html",
+      productlink: "https://sovrn.co/33nfwte",
       productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw70d9d63a/81109_IntenseH2OProofEyelinerPen_JetBlackA.jpg?sfrm=png&sw=700&q=90&yocs=1c_1e_1g_",
       productdescription: "H2O Proof Eyeliner Pen",
       price: "6",
@@ -67,7 +67,7 @@ const ProductListing: React.FC = () => {
     },
     // Price changed lower
     {
-      productlink: "https://go.skimresources.com/?id=62334X1400846&xs=1&url=https%3A%2F%2Fwww.elfcosmetics.co.uk%2Fh2o-proof-eyeliner-pen%2F200079.html",
+      productlink: "https://sovrn.co/33nfwte",
       productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw70d9d63a/81109_IntenseH2OProofEyelinerPen_JetBlackA.jpg?sfrm=png&sw=700&q=90&yocs=1c_1e_1g_",
       productdescription: "H2O Proof Eyeliner Pen",
       price: "8",
@@ -79,7 +79,7 @@ const ProductListing: React.FC = () => {
     },
     // Out of stock
     {
-      productlink: "https://go.skimresources.com/?id=62334X1400846&xs=1&url=https%3A%2F%2Fwww.elfcosmetics.co.uk%2Fbest-brushes-and-tools-of-2024%2F19453.html",
+      productlink: "https://sovrn.co/gxgr3py",
       productimage: "https://cdn-fsly.yottaa.net/5dbb1b444f1bbf5af87e1113/www.elfcosmetics.co.uk/v~4b.6d/dw/image/v2/BBXC_PRD/on/demandware.static/-/Sites-elf-master/default/dw0206cb92/2024/Bundles/HOLIDAYECOMEXCLUSIVE/19453_1124_HOLIDAY_ECOMMM_PDP_BUNDLES_BESTOFBRUSHES_TOOLS.jpg?sw=700&q=90&yocs=1c_1e_1g_",
       productdescription: "Best Brushes & Tools of 2024",
       price: "40",
