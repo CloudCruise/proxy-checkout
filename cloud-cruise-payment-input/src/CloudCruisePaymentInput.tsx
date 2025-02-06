@@ -14,6 +14,7 @@ import { AddressFinder } from "@ideal-postcodes/address-finder";
 import { StatusUpdatePopover } from "./components/updateLoader";
 import { PriceChangeDialog } from "./components/priceChangeUserInput";
 import { VerificationCodeDialog } from "./components/verificationCodeDialog";
+import { AppConfirmationDialog } from "./components/appConfirmationDialog";
 
 interface CloudCruisePaymentInputProps {
   container?: {
@@ -224,6 +225,7 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
   const [orderTotal, setOrderTotal] = useState("");
   const [openUserInputDialog, setOpenUserInputDialog] = useState(false);
   const [openVerificationDialog, setOpenVerificationDialog] = useState(false);
+  const [openAppConfirmationDialog, setOpenAppConfirmationDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const addressFinderInitialized = useRef(false);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -377,6 +379,9 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
         } else if (msg.startsWith("Verification code")) {
           console.log("Verification code required");
           setOpenVerificationDialog(true);
+        } else if (msg === "App confirmation required") {
+          console.log("App confirmation required");
+          setOpenAppConfirmationDialog(true);
         }
       }
       if (data?.payload?.current_step) {
@@ -1174,6 +1179,14 @@ const CloudCruisePaymentInput: React.FC<CloudCruisePaymentInputProps> = (
           }
           setStatus([]);
           setExecutionError("");
+        }}
+      />
+      <AppConfirmationDialog
+        open={openAppConfirmationDialog}
+        onOpenChange={setOpenAppConfirmationDialog}
+        onConfirm={() => {
+          setOpenAppConfirmationDialog(false);
+          submitUserInput({ confirmed: true }, sessionId);
         }}
       />
       <Toaster />
