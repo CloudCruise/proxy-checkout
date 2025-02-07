@@ -9,68 +9,11 @@ export const StatusUpdatePopover = ({
   currentIndex: number;
   statusUpdates: string[];
 }) => {
-  const [showPhoneAlert, setShowPhoneAlert] = useState(false);
   
-  useEffect(() => {
-    if (statusUpdates.length > 0 && 
-        statusUpdates[statusUpdates.length - 1] === "Please confirm the purchase on your phone") {
-      setShowPhoneAlert(true);
-    }
-  }, [statusUpdates]);
-
   const getScrollPosition = () => {
     if (statusUpdates.length <= 3) return 0;
     return (statusUpdates.length - 3) * 43;
   };
-
-  if (showPhoneAlert) {
-    return (
-      <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
-        <div className="w-full max-w-md p-6 space-y-8">
-          <div className="flex flex-col items-center text-center space-y-6">
-            <div className="rounded-full bg-blue-50 p-4">
-              <CreditCard className="w-12 h-12 text-blue-500" />
-            </div>
-            
-            <div className="space-y-2">
-              <h2 className="text-2xl font-semibold">Verify Purchase</h2>
-              <p className="text-gray-600">
-                Please open your banking app to approve this purchase
-              </p>
-            </div>
-
-            <div className="w-full space-y-4">
-              <div className="animate-pulse flex justify-center">
-                <div className="h-2 w-24 bg-blue-200 rounded"></div>
-              </div>
-              
-              <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-700">
-                <p className="font-medium mb-2">Next steps:</p>
-                <ul className="space-y-2 list-none text-left">
-                  <li className="flex items-start gap-2">
-                    <span className="font-medium">1.</span>
-                    <span>Open your banking app</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-medium">2.</span>
-                    <span>Look for a new push notification or pending authorization</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-medium">3.</span>
-                    <span>Review and approve the transaction</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="text-sm text-gray-500">
-                This window will automatically update once the purchase is approved
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
