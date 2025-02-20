@@ -19,6 +19,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         os.environ.get("ALLOW_ORIGIN"),
+        "*.mygleems.com"
     ],
     allow_credentials=True,
     allow_methods=["*"],
