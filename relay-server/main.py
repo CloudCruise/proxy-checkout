@@ -19,7 +19,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         os.environ.get("ALLOW_ORIGIN"),
-        "https://redbrain-static-frontend.onrender.com"
+        "https://redbrain-static-frontend.onrender.com",
+        "https://cloudskin.co.uk"
     ],
     allow_credentials=True,
     allow_methods=["*"],
